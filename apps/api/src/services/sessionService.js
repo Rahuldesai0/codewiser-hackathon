@@ -10,7 +10,83 @@ import {
   summarizeSession,
   uniqueStrings
 } from "../utils.js";
+import { topUpQuestionBank } from "./backgroundCrawlerService.js";
 import { evaluateBatch, initializeQuiz } from "./intelligenceClient.js";
+
+let schemaReadyPromise;
+
+function ensureCrawlerSchema() {
+  if (!schemaReadyPromise) {
+    schemaReadyPromise = (async () => {
+      await query(
+        `
+          create table if not exists session_question_cache (
+            question_id bigint not null,
+            session_id uuid not null references quiz_sessions(id) on delete cascade,
+            source_name text not null,
+            source_url text,
+            source_id text not null,
+            subject text not null,
+            topic text not null,
+            subtopic text not null,
+            type text not null check (type in ('mcq', 'short_text')),
+            prompt text not null,
+            options jsonb not null default '[]'::jsonb,
+            accepted_answers jsonb not null default '[]'::jsonb,
+            explanation text not null default '',
+            metadata jsonb not null default '{}'::jsonb,
+            fetched_at timestamptz not null default now(),
+            unique (session_id, source_name, source_id)
+          )
+        `
+      );
+
+      await query(
+        `
+          do $$
+          begin
+            if exists (
+              select 1
+              from information_schema.table_constraints
+              where constraint_name = 'session_question_cache_pkey'
+                and table_name = 'session_question_cache'
+            ) then
+              alter table session_question_cache drop constraint session_question_cache_pkey;
+            end if;
+
+            if not exists (
+              select 1
+              from information_schema.table_constraints
+              where constraint_name = 'session_question_cache_session_question_id_key'
+                and table_name = 'session_question_cache'
+            ) then
+              alter table session_question_cache
+              add constraint session_question_cache_session_question_id_key unique (session_id, question_id);
+            end if;
+          end $$;
+        `
+      );
+
+      await query(
+        `
+          do $$
+          begin
+            if exists (
+              select 1
+              from information_schema.table_constraints
+              where constraint_name = 'session_answers_question_id_fkey'
+                and table_name = 'session_answers'
+            ) then
+              alter table session_answers drop constraint session_answers_question_id_fkey;
+            end if;
+          end $$;
+        `
+      );
+    })();
+  }
+
+  return schemaReadyPromise;
+}
 
 async function getOrCreateUser(username) {
   const existing = await query("select id from app_users where username = $1", [username]);
@@ -65,6 +141,122 @@ async function loadQuestionsBySubjects(subjects) {
   );
 
   return result.rows.map(mapQuestionRow);
+}
+
+async function loadCachedQuestionsForSession(sessionId) {
+  await ensureCrawlerSchema();
+
+  const result = await query(
+    `
+      select
+        question_id as id,
+        subject,
+        topic,
+        subtopic,
+        type,
+        prompt,
+        options,
+        accepted_answers,
+        explanation,
+        metadata
+      from session_question_cache
+      where session_id = $1
+      order by fetched_at asc
+    `,
+    [sessionId]
+  );
+
+  return result.rows.map(mapQuestionRow);
+}
+
+function mergeQuestionPools(...pools) {
+  const seenIds = new Set();
+  const seenPrompts = new Set();
+  const merged = [];
+
+  for (const pool of pools) {
+    for (const question of pool) {
+      const promptKey = `${String(question.type || "")}:${String(question.prompt || "").trim().toLowerCase()}`;
+      if (seenIds.has(question.id) || seenPrompts.has(promptKey)) {
+        continue;
+      }
+
+      seenIds.add(question.id);
+      seenPrompts.add(promptKey);
+      merged.push(question);
+    }
+  }
+
+  return merged;
+}
+
+async function storeCachedQuestions(client, sessionId, questions) {
+  for (const question of questions) {
+    await client.query(
+      `
+        insert into session_question_cache (
+          question_id,
+          session_id,
+          source_name,
+          source_url,
+          source_id,
+          subject,
+          topic,
+          subtopic,
+          type,
+          prompt,
+          options,
+          accepted_answers,
+          explanation,
+          metadata
+        )
+        values (
+          $1,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          $7,
+          $8,
+          $9,
+          $10,
+          $11::jsonb,
+          $12::jsonb,
+          $13,
+          $14::jsonb
+        )
+        on conflict (session_id, question_id)
+        do update set
+          prompt = excluded.prompt,
+          options = excluded.options,
+          accepted_answers = excluded.accepted_answers,
+          explanation = excluded.explanation,
+          metadata = excluded.metadata
+      `,
+      [
+        question.id,
+        sessionId,
+        question.metadata?.sourceName || "Remote source",
+        question.metadata?.sourceUrl || null,
+        question.metadata?.sourceId || String(question.id),
+        question.subject,
+        question.topic,
+        question.subtopic,
+        question.type,
+        question.prompt,
+        JSON.stringify(question.options || []),
+        JSON.stringify(question.acceptedAnswers || []),
+        question.explanation || "",
+        JSON.stringify(question.metadata || {})
+      ]
+    );
+  }
+}
+
+async function deleteCachedQuestions(client, sessionId) {
+  await ensureCrawlerSchema();
+  await client.query("delete from session_question_cache where session_id = $1", [sessionId]);
 }
 
 function normalizeCreationInput(body) {
@@ -122,9 +314,16 @@ async function insertBatch(client, sessionId, batchIndex, batch) {
 }
 
 export async function createQuizSession(body) {
+  await ensureCrawlerSchema();
+
   const { username, subjects, questionTarget, batchSize } = normalizeCreationInput(body);
   const userId = await getOrCreateUser(username);
-  const questions = await loadQuestionsBySubjects(subjects);
+  let questions = await loadQuestionsBySubjects(subjects);
+
+  if (questions.length < questionTarget) {
+    await topUpQuestionBank(subjects, Math.max(questionTarget * 4, 120));
+    questions = await loadQuestionsBySubjects(subjects);
+  }
 
   assert(questions.length >= batchSize, 400, "Not enough questions are available for those subjects.");
 
@@ -281,6 +480,8 @@ function validateSubmission(batchQuestions, rawAnswers) {
 }
 
 export async function submitBatch(sessionId, batchIndex, rawAnswers) {
+  await ensureCrawlerSchema();
+
   const sessionResult = await query("select * from quiz_sessions where id = $1", [sessionId]);
   assert(sessionResult.rowCount, 404, "Quiz session not found.");
 
@@ -302,7 +503,9 @@ export async function submitBatch(sessionId, batchIndex, rawAnswers) {
 
   const batchQuestions = parseJson(batchResult.rows[0].questions, []).map(normalizeQuestion);
   const answers = validateSubmission(batchQuestions, rawAnswers);
-  const questionPool = await loadQuestionsBySubjects(parseJson(session.requested_subjects, []));
+  const localQuestions = await loadQuestionsBySubjects(parseJson(session.requested_subjects, []));
+  const cachedQuestions = await loadCachedQuestionsForSession(sessionId);
+  const questionPool = mergeQuestionPools(localQuestions, cachedQuestions);
 
   const intelligence = await evaluateBatch({
     state: parseJson(session.analysis_state, {}),
@@ -409,6 +612,10 @@ export async function submitBatch(sessionId, batchIndex, rawAnswers) {
 
     if (!intelligence.summary.finished && intelligence.nextBatch) {
       await insertBatch(client, sessionId, intelligence.nextBatch.batchIndex, intelligence.nextBatch);
+    }
+
+    if (intelligence.summary.finished) {
+      await deleteCachedQuestions(client, sessionId);
     }
 
     await client.query("commit");

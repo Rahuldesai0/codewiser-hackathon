@@ -507,3 +507,293 @@ values
     'Breadth First Search processes vertices in increasing distance from the source.',
     '{}'::jsonb
   );
+
+insert into questions (subject, topic, subtopic, type, prompt, options, accepted_answers, explanation, metadata)
+values
+  (
+    'COA',
+    'Processor Organization',
+    'Pipelining',
+    'mcq',
+    'What is the main advantage of instruction pipelining?',
+    '[{"id":"a","text":"It increases instruction throughput","isCorrect":true},{"id":"b","text":"It eliminates cache misses","isCorrect":false},{"id":"c","text":"It reduces program size","isCorrect":false},{"id":"d","text":"It removes the need for registers","isCorrect":false}]'::jsonb,
+    '[]'::jsonb,
+    'Pipelining overlaps instruction stages so more instructions complete per unit time.',
+    '{}'::jsonb
+  ),
+  (
+    'COA',
+    'Processor Organization',
+    'Pipelining',
+    'short_text',
+    'A data hazard in a pipeline is often reduced using what hardware technique that supplies results early to later stages?',
+    '[]'::jsonb,
+    '["forwarding","data forwarding","bypassing"]'::jsonb,
+    'Forwarding, also called bypassing, routes produced values directly to dependent stages.',
+    '{}'::jsonb
+  ),
+  (
+    'COA',
+    'Memory Organization',
+    'Cache Memory',
+    'mcq',
+    'Which cache mapping technique allows a block to be placed in exactly one cache line?',
+    '[{"id":"a","text":"Direct mapping","isCorrect":true},{"id":"b","text":"Fully associative mapping","isCorrect":false},{"id":"c","text":"Set associative mapping","isCorrect":false},{"id":"d","text":"Virtual mapping","isCorrect":false}]'::jsonb,
+    '[]'::jsonb,
+    'Direct-mapped cache chooses a single cache line for each memory block.',
+    '{}'::jsonb
+  ),
+  (
+    'COA',
+    'Instruction Set Architecture',
+    'Addressing Modes',
+    'short_text',
+    'In which addressing mode is the operand value itself present inside the instruction?',
+    '[]'::jsonb,
+    '["immediate addressing","immediate"]'::jsonb,
+    'Immediate addressing embeds the operand directly in the instruction.',
+    '{}'::jsonb
+  ),
+  (
+    'COA',
+    'Digital Logic',
+    'Boolean Algebra',
+    'mcq',
+    'What is the output of an XOR gate when both inputs are the same?',
+    '[{"id":"a","text":"0","isCorrect":true},{"id":"b","text":"1","isCorrect":false},{"id":"c","text":"Depends on carry","isCorrect":false},{"id":"d","text":"Undefined","isCorrect":false}]'::jsonb,
+    '[]'::jsonb,
+    'XOR outputs 1 only when its inputs differ.',
+    '{}'::jsonb
+  );
+
+insert into questions (subject, topic, subtopic, type, prompt, options, accepted_answers, explanation, metadata)
+values
+  (
+    'CN',
+    'Network Layers',
+    'OSI Model',
+    'mcq',
+    'Which OSI layer is responsible for routing packets between networks?',
+    '[{"id":"a","text":"Transport layer","isCorrect":false},{"id":"b","text":"Network layer","isCorrect":true},{"id":"c","text":"Session layer","isCorrect":false},{"id":"d","text":"Physical layer","isCorrect":false}]'::jsonb,
+    '[]'::jsonb,
+    'The network layer handles logical addressing and routing.',
+    '{}'::jsonb
+  ),
+  (
+    'CN',
+    'Transport Layer',
+    'TCP',
+    'short_text',
+    'TCP uses which acknowledgement strategy where the receiver may confirm multiple bytes with one ACK number?',
+    '[]'::jsonb,
+    '["cumulative acknowledgement","cumulative ack","cumulative acknowledgment"]'::jsonb,
+    'TCP acknowledgements are cumulative by default.',
+    '{}'::jsonb
+  ),
+  (
+    'CN',
+    'Network Layer',
+    'Routing',
+    'mcq',
+    'Which shortest-path algorithm is used by link-state routing protocols such as OSPF?',
+    '[{"id":"a","text":"Bellman-Ford","isCorrect":false},{"id":"b","text":"Dijkstra","isCorrect":true},{"id":"c","text":"Floyd-Warshall","isCorrect":false},{"id":"d","text":"Kruskal","isCorrect":false}]'::jsonb,
+    '[]'::jsonb,
+    'Link-state protocols build a graph and use Dijkstra''s algorithm.',
+    '{}'::jsonb
+  ),
+  (
+    'CN',
+    'Application Layer',
+    'DNS and HTTP',
+    'short_text',
+    'DNS primarily translates domain names into what kind of address?',
+    '[]'::jsonb,
+    '["ip address","ip addresses","internet protocol address"]'::jsonb,
+    'DNS resolves human-readable names to IP addresses.',
+    '{}'::jsonb
+  ),
+  (
+    'CN',
+    'Transport Layer',
+    'TCP',
+    'mcq',
+    'Which TCP flag is commonly used to initiate a connection?',
+    '[{"id":"a","text":"FIN","isCorrect":false},{"id":"b","text":"RST","isCorrect":false},{"id":"c","text":"SYN","isCorrect":true},{"id":"d","text":"PSH","isCorrect":false}]'::jsonb,
+    '[]'::jsonb,
+    'The SYN flag starts the TCP three-way handshake.',
+    '{}'::jsonb
+  );
+
+insert into questions (subject, topic, subtopic, type, prompt, options, accepted_answers, explanation, metadata)
+values
+  (
+    'Maths',
+    'Discrete Mathematics',
+    'Logic',
+    'mcq',
+    'The implication p -> q is false in which case?',
+    '[{"id":"a","text":"p is true and q is false","isCorrect":true},{"id":"b","text":"p is false and q is true","isCorrect":false},{"id":"c","text":"Both are true","isCorrect":false},{"id":"d","text":"Both are false","isCorrect":false}]'::jsonb,
+    '[]'::jsonb,
+    'An implication fails only when the premise is true and the conclusion is false.',
+    '{}'::jsonb
+  ),
+  (
+    'Maths',
+    'Discrete Mathematics',
+    'Relations and Functions',
+    'short_text',
+    'A function that is both one-to-one and onto is called what?',
+    '[]'::jsonb,
+    '["bijection","bijective function","bijective"]'::jsonb,
+    'A function that is injective and surjective is bijective.',
+    '{}'::jsonb
+  ),
+  (
+    'Maths',
+    'Combinatorics',
+    'Counting',
+    'mcq',
+    'How many ways can 3 distinct books be arranged on a shelf?',
+    '[{"id":"a","text":"3","isCorrect":false},{"id":"b","text":"6","isCorrect":true},{"id":"c","text":"9","isCorrect":false},{"id":"d","text":"27","isCorrect":false}]'::jsonb,
+    '[]'::jsonb,
+    'The number of permutations of 3 distinct objects is 3! = 6.',
+    '{}'::jsonb
+  ),
+  (
+    'Maths',
+    'Graph Theory',
+    'Trees and Connectivity',
+    'short_text',
+    'A connected acyclic undirected graph is called what?',
+    '[]'::jsonb,
+    '["tree"]'::jsonb,
+    'A tree is exactly a connected acyclic undirected graph.',
+    '{}'::jsonb
+  ),
+  (
+    'Maths',
+    'Discrete Mathematics',
+    'Logic',
+    'mcq',
+    'What is the logical negation of "p and q"?',
+    '[{"id":"a","text":"not p and not q","isCorrect":false},{"id":"b","text":"not p or not q","isCorrect":true},{"id":"c","text":"p or q","isCorrect":false},{"id":"d","text":"not (p or q)","isCorrect":false}]'::jsonb,
+    '[]'::jsonb,
+    'By De Morgan''s law, not(p and q) is equivalent to (not p) or (not q).',
+    '{}'::jsonb
+  );
+
+insert into questions (subject, topic, subtopic, type, prompt, options, accepted_answers, explanation, metadata)
+values
+  (
+    'TOC',
+    'Formal Languages',
+    'Regular Languages',
+    'mcq',
+    'Which machine recognizes regular languages?',
+    '[{"id":"a","text":"Finite automaton","isCorrect":true},{"id":"b","text":"Pushdown automaton","isCorrect":false},{"id":"c","text":"Turing machine only","isCorrect":false},{"id":"d","text":"Linear bounded automaton","isCorrect":false}]'::jsonb,
+    '[]'::jsonb,
+    'Regular languages are recognized by finite automata.',
+    '{}'::jsonb
+  ),
+  (
+    'TOC',
+    'Automata',
+    'Pushdown Automata',
+    'short_text',
+    'A pushdown automaton uses which extra memory structure beyond finite-state control?',
+    '[]'::jsonb,
+    '["stack"]'::jsonb,
+    'A PDA extends finite automata with a stack.',
+    '{}'::jsonb
+  ),
+  (
+    'TOC',
+    'Computability',
+    'Turing Machines',
+    'mcq',
+    'Which famous undecidable problem asks whether a program stops on a given input?',
+    '[{"id":"a","text":"Travelling salesman problem","isCorrect":false},{"id":"b","text":"Halting problem","isCorrect":true},{"id":"c","text":"Membership problem for DFA","isCorrect":false},{"id":"d","text":"Sorting problem","isCorrect":false}]'::jsonb,
+    '[]'::jsonb,
+    'The halting problem is undecidable for general programs and inputs.',
+    '{}'::jsonb
+  ),
+  (
+    'TOC',
+    'Grammar',
+    'Context Free Grammar',
+    'short_text',
+    'A grammar is called ambiguous if a string has more than one what?',
+    '[]'::jsonb,
+    '["parse tree","leftmost derivation","rightmost derivation"]'::jsonb,
+    'Ambiguity means at least one string has multiple parse trees or equivalent derivations.',
+    '{}'::jsonb
+  ),
+  (
+    'TOC',
+    'Formal Languages',
+    'Regular Languages',
+    'mcq',
+    'Which operation can be used to convert an NFA into an equivalent DFA?',
+    '[{"id":"a","text":"Subset construction","isCorrect":true},{"id":"b","text":"Topological sort","isCorrect":false},{"id":"c","text":"Dynamic programming","isCorrect":false},{"id":"d","text":"Backtracking","isCorrect":false}]'::jsonb,
+    '[]'::jsonb,
+    'Subset construction builds DFA states from sets of NFA states.',
+    '{}'::jsonb
+  );
+
+insert into questions (subject, topic, subtopic, type, prompt, options, accepted_answers, explanation, metadata)
+values
+  (
+    'Miscellaneous CS',
+    'Programming Languages',
+    'Language Concepts',
+    'mcq',
+    'What is the main job of a compiler?',
+    '[{"id":"a","text":"Translate source code into target code","isCorrect":true},{"id":"b","text":"Route packets","isCorrect":false},{"id":"c","text":"Schedule processes","isCorrect":false},{"id":"d","text":"Normalize relations","isCorrect":false}]'::jsonb,
+    '[]'::jsonb,
+    'A compiler translates a high-level program into lower-level target code.',
+    '{}'::jsonb
+  ),
+  (
+    'Miscellaneous CS',
+    'Software Engineering',
+    'Testing and Design',
+    'short_text',
+    'Testing individual functions or classes in isolation is usually called what kind of testing?',
+    '[]'::jsonb,
+    '["unit testing","unit test"]'::jsonb,
+    'Unit testing verifies small isolated units of code.',
+    '{}'::jsonb
+  ),
+  (
+    'Miscellaneous CS',
+    'Security',
+    'Basics',
+    'mcq',
+    'Which property ensures that data has not been altered unexpectedly?',
+    '[{"id":"a","text":"Confidentiality","isCorrect":false},{"id":"b","text":"Availability","isCorrect":false},{"id":"c","text":"Integrity","isCorrect":true},{"id":"d","text":"Latency","isCorrect":false}]'::jsonb,
+    '[]'::jsonb,
+    'Integrity means the data remains accurate and unmodified.',
+    '{}'::jsonb
+  ),
+  (
+    'Miscellaneous CS',
+    'Algorithms and Analysis',
+    'Asymptotics',
+    'short_text',
+    'Which notation gives an asymptotic upper bound on growth rate?',
+    '[]'::jsonb,
+    '["big o","o notation","big o notation"]'::jsonb,
+    'Big-O notation describes an asymptotic upper bound.',
+    '{}'::jsonb
+  ),
+  (
+    'Miscellaneous CS',
+    'Security',
+    'Basics',
+    'mcq',
+    'Which cryptographic technique uses the same secret key for encryption and decryption?',
+    '[{"id":"a","text":"Asymmetric encryption","isCorrect":false},{"id":"b","text":"Symmetric encryption","isCorrect":true},{"id":"c","text":"Hashing","isCorrect":false},{"id":"d","text":"Digital signature","isCorrect":false}]'::jsonb,
+    '[]'::jsonb,
+    'Symmetric encryption uses one shared secret key at both ends.',
+    '{}'::jsonb
+  );

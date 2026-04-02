@@ -12,17 +12,39 @@ app = FastAPI(title="Adaptive Quiz Intelligence Service")
 
 COMPLEXITY_KEYWORDS = {
     "deadlock",
+    "automata",
+    "bandwidth",
     "serializable",
     "normalization",
     "amortized",
     "belady",
+    "cache",
+    "cipher",
     "recurrence",
     "concurrency",
+    "congestion",
+    "contextfree",
+    "determinant",
+    "dfa",
+    "grammar",
     "index",
+    "instruction",
+    "kernel",
+    "kmap",
+    "latency",
+    "matrix",
+    "modulo",
+    "nfa",
+    "pda",
+    "pipeline",
     "proof",
+    "routing",
     "hash",
     "scheduling",
+    "semaphore",
     "locking",
+    "tcp",
+    "turing",
     "tree",
     "heap",
     "rollback",
@@ -120,6 +142,15 @@ def correct_answer_display(question: dict[str, Any]) -> str:
 
 
 def complexity_score(question: dict[str, Any]) -> float:
+    metadata = question.get("metadata", {}) or {}
+    remote_difficulty = metadata.get("remoteDifficulty", {}) or {}
+    remote_score = remote_difficulty.get("score", metadata.get("difficultyScore"))
+    remote_label = remote_difficulty.get("label", metadata.get("difficultyLabel"))
+
+    if isinstance(remote_score, (int, float)):
+        label_bonus = {"easy": 0.0, "medium": 3.0, "hard": 6.0}.get(str(remote_label).lower(), 0.0)
+        return float(remote_score) + label_bonus
+
     prompt = question["prompt"]
     prompt_words = re.findall(r"\b\w+\b", prompt)
     numeric_complexity = len(re.findall(r"\d", prompt))

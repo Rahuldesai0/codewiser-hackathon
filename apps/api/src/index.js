@@ -4,9 +4,11 @@ import { fileURLToPath } from "node:url";
 import cors from "cors";
 import express from "express";
 import { config } from "./config.js";
+import { crawlerRouter } from "./routes/crawler.js";
 import { historyRouter } from "./routes/history.js";
 import { quizzesRouter } from "./routes/quizzes.js";
 import { subjectsRouter } from "./routes/subjects.js";
+import { startBackgroundQuestionCrawler } from "./services/backgroundCrawlerService.js";
 
 const app = express();
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -23,6 +25,7 @@ app.get("/health", (_request, response) => {
   response.json({ status: "ok" });
 });
 
+app.use("/api/crawler", crawlerRouter);
 app.use("/api/subjects", subjectsRouter);
 app.use("/api/quizzes", quizzesRouter);
 app.use("/api/history", historyRouter);
@@ -45,4 +48,5 @@ app.use((error, _request, response, _next) => {
 
 app.listen(config.port, () => {
   console.log(`API listening on http://127.0.0.1:${config.port}`);
+  startBackgroundQuestionCrawler();
 });
