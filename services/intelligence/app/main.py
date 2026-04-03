@@ -720,8 +720,8 @@ def sort_questions_for_confidence(
         questions,
         key=lambda question: (
             DIFFICULTY_ORDER.get(difficulty_map.get(question["id"], "medium"), 1),
-            len(question["prompt"]),
             stable_random_rank(state, label, question["id"]),
+            len(question["prompt"]),
         ),
     )
 

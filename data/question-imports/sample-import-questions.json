@@ -1,0 +1,86 @@
+[
+  {
+    "subject": "DSA",
+    "topic": "Trees",
+    "subtopic": "Binary Tree",
+    "prompt": "Which traversal visits the left subtree, then the root, then the right subtree?",
+    "answer": "Inorder traversal",
+    "explanation": "Inorder traversal follows the order left, root, right."
+  },
+  {
+    "subject": "DSA",
+    "topic": "Graphs",
+    "subtopic": "Traversal",
+    "prompt": "Which traversal is typically implemented using a queue?",
+    "options": [
+      { "text": "Depth First Search" },
+      { "text": "Breadth First Search", "isCorrect": true },
+      { "text": "Binary Search" },
+      { "text": "Topological Sort" }
+    ],
+    "explanation": "Breadth First Search uses a queue to process nodes level by level."
+  },
+  {
+    "subject": "DBMS",
+    "topic": "Relational Model",
+    "subtopic": "Normalization",
+    "prompt": "Which normal form removes transitive dependencies?",
+    "options": [
+      { "text": "1NF" },
+      { "text": "2NF" },
+      { "text": "3NF", "isCorrect": true },
+      { "text": "4NF" }
+    ],
+    "explanation": "Third Normal Form removes transitive dependencies from non-key attributes."
+  },
+  {
+    "subject": "DBMS",
+    "topic": "Transaction Management",
+    "subtopic": "ACID",
+    "prompt": "In ACID properties, what does the letter I stand for?",
+    "answer": "Isolation",
+    "explanation": "Isolation ensures concurrently running transactions do not interfere improperly with one another."
+  },
+  {
+    "subject": "OS",
+    "topic": "Memory Management",
+    "subtopic": "Paging",
+    "prompt": "Which page replacement algorithm replaces the page that has not been used for the longest time?",
+    "options": [
+      { "text": "FIFO" },
+      { "text": "LRU", "isCorrect": true },
+      { "text": "Optimal" },
+      { "text": "Clock" }
+    ],
+    "explanation": "Least Recently Used replaces the page whose last use was farthest in the past."
+  },
+  {
+    "subject": "CN",
+    "topic": "Transport Layer",
+    "subtopic": "TCP",
+    "prompt": "What mechanism in TCP helps control the rate of data transmission between sender and receiver?",
+    "answer": "Flow control",
+    "explanation": "TCP flow control prevents a fast sender from overwhelming a slow receiver."
+  },
+  {
+    "subject": "TOC",
+    "topic": "Formal Languages",
+    "subtopic": "Regular Languages",
+    "prompt": "Which machine recognizes regular languages?",
+    "options": [
+      { "text": "Pushdown Automaton" },
+      { "text": "Turing Machine" },
+      { "text": "Finite Automaton", "isCorrect": true },
+      { "text": "Linear Bounded Automaton" }
+    ],
+    "explanation": "Regular languages are recognized by deterministic or nondeterministic finite automata."
+  },
+  {
+    "subject": "COA",
+    "topic": "Processor Organization",
+    "subtopic": "Pipelining",
+    "prompt": "What is the name of the pipeline issue that occurs when an instruction depends on the result of a previous instruction?",
+    "answer": "Data hazard",
+    "explanation": "A data hazard happens when an instruction needs data that is not yet available from a prior stage."
+  }
+]
