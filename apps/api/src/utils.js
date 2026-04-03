@@ -114,8 +114,17 @@ export function summarizeSession(session) {
     id: session.id,
     username: session.username_snapshot,
     subjects: parseJson(session.requested_subjects, []),
+    presetKey: session.preset_key || "custom",
     questionTarget: session.question_target,
     batchSize: session.batch_size,
+    timerEnabled: Boolean(session.timer_enabled),
+    timerDurationMinutes: Number(session.timer_duration_minutes || 0),
+    timerEndsAt: session.timer_ends_at || null,
+    timerRemainingSeconds:
+      session.timer_remaining_seconds == null
+        ? null
+        : Number(session.timer_remaining_seconds),
+    timedOut: Boolean(session.timed_out),
     status: session.status,
     totalCorrect: session.total_correct,
     totalAnswered: session.total_answered,

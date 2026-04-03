@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ChartCard } from "../components/ChartCard";
+import { ConceptGraphCard } from "../components/ConceptGraphCard";
 import { api } from "../lib/api";
 
 function toChartItems(entries) {
@@ -15,6 +16,7 @@ export function AnalysisPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -22,9 +24,14 @@ export function AnalysisPage() {
     async function loadAnalysis() {
       try {
         setLoading(true);
+        setError("");
         const result = await api.getAnalysis(sessionId);
         if (!cancelled) {
           setData(result);
+          const subjects = [...new Set(Object.values(result.subtopicBreakdown || {}).map((entry) => entry.subject))]
+            .filter(Boolean)
+            .sort((left, right) => left.localeCompare(right));
+          setSelectedSubject(subjects[0] || "");
         }
       } catch (caughtError) {
         if (!cancelled) {
@@ -59,9 +66,13 @@ export function AnalysisPage() {
     );
   }
 
-  const subtopics = Object.values(data.subtopicBreakdown || {}).sort((a, b) =>
-    a.subject.localeCompare(b.subject)
-  );
+  const subjectOptions = [...new Set(Object.values(data.subtopicBreakdown || {}).map((entry) => entry.subject))]
+    .filter(Boolean)
+    .sort((left, right) => left.localeCompare(right));
+  const activeSubject = subjectOptions.includes(selectedSubject) ? selectedSubject : subjectOptions[0] || "";
+  const subtopics = Object.values(data.subtopicBreakdown || {})
+    .filter((entry) => !activeSubject || entry.subject === activeSubject)
+    .sort((a, b) => a.topic.localeCompare(b.topic) || a.subtopic.localeCompare(b.subtopic));
 
   return (
     <div className="page-stack">
@@ -86,32 +97,59 @@ export function AnalysisPage() {
         />
       </div>
 
+      <ConceptGraphCard
+        conceptGraph={data.conceptGraph}
+        conceptRecommendations={data.conceptRecommendations}
+      />
+
       <section className="panel">
         <div className="panel-header">
           <h2>Subject and subtopic breakdown</h2>
+          <label className="field concept-select">
+            <span>Subject</span>
+            <select
+              value={activeSubject}
+              onChange={(event) => setSelectedSubject(event.target.value)}
+              disabled={!subjectOptions.length}
+            >
+              {subjectOptions.length ? (
+                subjectOptions.map((subject) => (
+                  <option key={subject} value={subject}>
+                    {subject}
+                  </option>
+                ))
+              ) : (
+                <option value="">No subject data</option>
+              )}
+            </select>
+          </label>
         </div>
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Subject</th>
-                <th>Subtopic</th>
-                <th>Accuracy</th>
-                <th>Skill</th>
-              </tr>
-            </thead>
-            <tbody>
-              {subtopics.map((entry) => (
-                <tr key={`${entry.subject}-${entry.subtopic}`}>
-                  <td>{entry.subject}</td>
-                  <td>{entry.subtopic}</td>
-                  <td>{entry.total ? Math.round((entry.correct / entry.total) * 100) : 0}%</td>
-                  <td>{Math.round((entry.skill || 0) * 100)}%</td>
+        {subtopics.length ? (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Topic</th>
+                  <th>Subtopic</th>
+                  <th>Accuracy</th>
+                  <th>Skill</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {subtopics.map((entry) => (
+                  <tr key={`${entry.subject}-${entry.subtopic}`}>
+                    <td>{entry.topic}</td>
+                    <td>{entry.subtopic}</td>
+                    <td>{entry.total ? Math.round((entry.correct / entry.total) * 100) : 0}%</td>
+                    <td>{Math.round((entry.skill || 0) * 100)}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="muted">No subtopic breakdown is available for this session yet.</p>
+        )}
       </section>
 
       <section className="panel">

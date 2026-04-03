@@ -30,6 +30,32 @@ export const config = {
     Number(process.env.HUGGINGFACE_DATASET_MAX_PAGES || 10),
   huggingFaceDatasetEstimatedRows:
     Number(process.env.HUGGINGFACE_DATASET_ESTIMATED_ROWS || 1336),
+  englishGrammarDatasetEnabled:
+    process.env.ENGLISH_GRAMMAR_DATASET_ENABLED !== "false",
+  englishGrammarDatasetName:
+    process.env.ENGLISH_GRAMMAR_DATASET_NAME || "Teravee/1000_english-grammar-dataset",
+  englishGrammarDatasetConfig:
+    process.env.ENGLISH_GRAMMAR_DATASET_CONFIG || "default",
+  englishGrammarDatasetSplit:
+    process.env.ENGLISH_GRAMMAR_DATASET_SPLIT || "train",
+  englishGrammarDatasetLength:
+    Number(process.env.ENGLISH_GRAMMAR_DATASET_LENGTH || 100),
+  englishGrammarDatasetMaxPages:
+    Number(process.env.ENGLISH_GRAMMAR_DATASET_MAX_PAGES || 5),
+  englishGrammarDatasetEstimatedRows:
+    Number(process.env.ENGLISH_GRAMMAR_DATASET_ESTIMATED_ROWS || 71052),
+  mmluDatasetEnabled:
+    process.env.MMLU_DATASET_ENABLED !== "false",
+  mmluDatasetName:
+    process.env.MMLU_DATASET_NAME || "cais/mmlu",
+  mmluDatasetSplit:
+    process.env.MMLU_DATASET_SPLIT || "test",
+  mmluDatasetLength:
+    Number(process.env.MMLU_DATASET_LENGTH || 100),
+  mmluDatasetMaxPages:
+    Number(process.env.MMLU_DATASET_MAX_PAGES || 1),
+  mmluDatasetEstimatedRows:
+    Number(process.env.MMLU_DATASET_ESTIMATED_ROWS || 100),
   quizApiBase:
     process.env.QUIZ_API_BASE || "https://quizapi.io/api/v1",
   quizApiKey: process.env.QUIZ_API_KEY || "",

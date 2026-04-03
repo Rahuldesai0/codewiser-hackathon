@@ -1,29 +1,68 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, activeSessionStorageKey } from "../lib/api";
+import { getPreset, testPresets, timerMinuteOptions } from "../lib/testPresets";
 
-const QUESTION_OPTIONS = Array.from({ length: 20 }, (_value, index) => (index + 1) * 5);
 const BATCH_OPTIONS = [5, 10];
+
+function normalizeQuestionTarget(value, batchSize, fallback = 10) {
+  const parsed = Number.parseInt(String(value ?? ""), 10);
+  if (Number.isNaN(parsed)) {
+    return fallback;
+  }
+
+  const clamped = Math.max(batchSize, Math.min(100, parsed));
+  const normalized = Math.max(batchSize, Math.round(clamped / 5) * 5);
+  return Math.min(100, normalized);
+}
 
 export function SetupPage({ subjects, loading, error }) {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
+  const [presetKey, setPresetKey] = useState("custom");
   const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const [subjectToAdd, setSubjectToAdd] = useState("");
   const [questionTarget, setQuestionTarget] = useState(10);
   const [batchSize, setBatchSize] = useState(5);
+  const [timerEnabled, setTimerEnabled] = useState(false);
+  const [timerDurationMinutes, setTimerDurationMinutes] = useState(60);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
-
-  const allowedQuestionOptions = useMemo(
-    () => QUESTION_OPTIONS.filter((value) => value >= batchSize && value % 5 === 0),
-    [batchSize]
+  const selectedPreset = useMemo(() => getPreset(presetKey), [presetKey]);
+  const availableSubjectOptions = useMemo(
+    () => subjects.filter((entry) => !selectedSubjects.includes(entry.subject)),
+    [selectedSubjects, subjects]
   );
 
   useEffect(() => {
-    if (!allowedQuestionOptions.includes(questionTarget)) {
-      setQuestionTarget(allowedQuestionOptions[0] || 5);
+    const normalized = normalizeQuestionTarget(questionTarget, batchSize, batchSize);
+    if (normalized !== questionTarget) {
+      setQuestionTarget(normalized);
     }
-  }, [allowedQuestionOptions, questionTarget]);
+  }, [batchSize, questionTarget]);
+
+  useEffect(() => {
+    if (!availableSubjectOptions.some((entry) => entry.subject === subjectToAdd)) {
+      setSubjectToAdd(availableSubjectOptions[0]?.subject || "");
+    }
+  }, [availableSubjectOptions, subjectToAdd]);
+
+  useEffect(() => {
+    const preset = getPreset(presetKey);
+    if (!preset) {
+      return;
+    }
+
+    setQuestionTarget(preset.questionTarget);
+    setBatchSize(preset.batchSize);
+    setTimerEnabled(preset.timerEnabled);
+    setTimerDurationMinutes(preset.timerDurationMinutes || 60);
+
+    if (preset.subjects.length) {
+      const availableSubjects = new Set(subjects.map((entry) => entry.subject));
+      setSelectedSubjects(preset.subjects.filter((subject) => availableSubjects.has(subject)));
+    }
+  }, [presetKey, subjects]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -38,9 +77,12 @@ export function SetupPage({ subjects, loading, error }) {
       setSubmitting(true);
       const result = await api.createQuiz({
         username,
+        presetKey,
         subjects: selectedSubjects,
         questionTarget,
-        batchSize
+        batchSize,
+        timerEnabled,
+        timerDurationMinutes: timerEnabled ? timerDurationMinutes : 0
       });
       localStorage.setItem(activeSessionStorageKey(), result.session.id);
       navigate(`/quiz/${result.session.id}`);
@@ -51,12 +93,15 @@ export function SetupPage({ subjects, loading, error }) {
     }
   }
 
-  function toggleSubject(subject) {
-    setSelectedSubjects((current) =>
-      current.includes(subject)
-        ? current.filter((value) => value !== subject)
-        : [...current, subject]
-    );
+  function addSubject(subject) {
+    if (!subject) {
+      return;
+    }
+    setSelectedSubjects((current) => (current.includes(subject) ? current : [...current, subject]));
+  }
+
+  function removeSubject(subject) {
+    setSelectedSubjects((current) => current.filter((value) => value !== subject));
   }
 
   return (
@@ -77,6 +122,18 @@ export function SetupPage({ subjects, loading, error }) {
         </div>
 
         <label className="field">
+          <span>Test preset</span>
+          <select value={presetKey} onChange={(event) => setPresetKey(event.target.value)}>
+            {testPresets.map((preset) => (
+              <option key={preset.key} value={preset.key}>
+                {preset.label}
+              </option>
+            ))}
+          </select>
+          <p className="muted">{selectedPreset.description}</p>
+        </label>
+
+        <label className="field">
           <span>Username</span>
           <input
             type="text"
@@ -93,37 +150,55 @@ export function SetupPage({ subjects, loading, error }) {
           <span>Subjects</span>
           {loading ? <p className="muted">Loading subjects...</p> : null}
           {error ? <p className="muted">{error}</p> : null}
-          <div className="subject-grid">
-            {subjects.map((entry) => {
-              const checked = selectedSubjects.includes(entry.subject);
-              return (
-                <label key={entry.subject} className={`subject-card ${checked ? "selected" : ""}`}>
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    disabled={loading}
-                    onChange={() => toggleSubject(entry.subject)}
-                  />
-                  <strong>{entry.subject}</strong>
-                </label>
-              );
-            })}
+          <div className="subject-picker-row">
+            <select
+              value={subjectToAdd}
+              onChange={(event) => {
+                const nextSubject = event.target.value;
+                setSubjectToAdd(nextSubject);
+                addSubject(nextSubject);
+              }}
+              disabled={loading || !availableSubjectOptions.length}
+            >
+              {availableSubjectOptions.length ? (
+                availableSubjectOptions.map((entry) => (
+                  <option key={entry.subject} value={entry.subject}>
+                    {entry.subject}
+                  </option>
+                ))
+              ) : (
+                <option value="">All available subjects are already selected</option>
+              )}
+            </select>
+          </div>
+          <div className="selected-subject-list">
+            {selectedSubjects.length ? (
+              selectedSubjects.map((subject) => (
+                <div key={subject} className="selected-subject-chip">
+                  <span>{subject}</span>
+                  <button type="button" onClick={() => removeSubject(subject)} aria-label={`Remove ${subject}`}>
+                    x
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="muted">No subjects selected yet.</p>
+            )}
           </div>
         </div>
 
         <div className="split">
           <label className="field">
             <span>Total questions</span>
-            <select
+            <input
+              type="number"
+              min={batchSize}
+              max={100}
+              step={5}
               value={questionTarget}
-              onChange={(event) => setQuestionTarget(Number(event.target.value))}
-            >
-              {(allowedQuestionOptions.length ? allowedQuestionOptions : [10]).map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
+              onChange={(event) => setQuestionTarget(normalizeQuestionTarget(event.target.value, batchSize, questionTarget))}
+            />
+            <p className="muted">Use multiples of 5, up to 100.</p>
           </label>
 
           <label className="field">
@@ -143,6 +218,37 @@ export function SetupPage({ subjects, loading, error }) {
             </select>
           </label>
         </div>
+
+        <section className="panel inset-panel">
+          <div className="panel-header">
+            <h3>Timer</h3>
+            <label className="toggle-row">
+              <input
+                type="checkbox"
+                checked={timerEnabled}
+                onChange={(event) => setTimerEnabled(event.target.checked)}
+              />
+              <span>{timerEnabled ? "Timed test" : "Practice mode"}</span>
+            </label>
+          </div>
+          {timerEnabled ? (
+            <label className="field">
+              <span>Duration</span>
+              <select
+                value={timerDurationMinutes}
+                onChange={(event) => setTimerDurationMinutes(Number(event.target.value))}
+              >
+                {timerMinuteOptions.map((value) => (
+                  <option key={value} value={value}>
+                    {value} minutes
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <p className="muted">Timer is off. The quiz stays in practice mode until you submit all batches.</p>
+          )}
+        </section>
 
         {formError ? <p className="error-text">{formError}</p> : null}
 

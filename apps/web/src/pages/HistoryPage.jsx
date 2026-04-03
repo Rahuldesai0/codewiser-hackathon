@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { AccuracyTrendCard } from "../components/AccuracyTrendCard";
 import { ChartCard } from "../components/ChartCard";
 import { api } from "../lib/api";
 
@@ -8,6 +9,7 @@ export function HistoryPage() {
   const [data, setData] = useState({ sessions: [], trend: [], subjectPerformance: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [trendRange, setTrendRange] = useState("all");
 
   async function loadHistory(nextUsername = "") {
     try {
@@ -55,7 +57,12 @@ export function HistoryPage() {
       {error ? <p className="error-text">{error}</p> : null}
 
       <div className="chart-grid">
-        <ChartCard title="Accuracy over time" items={data.trend} />
+        <AccuracyTrendCard
+          sessions={data.sessions}
+          range={trendRange}
+          onRangeChange={setTrendRange}
+          loading={loading}
+        />
         <ChartCard title="Subject performance" items={data.subjectPerformance} />
       </div>
 

@@ -113,6 +113,167 @@ const SUBJECT_PROFILES = {
       query: "discrete mathematics graph theory trees spanning tree connectivity degree"
     }
   ],
+  "General Maths": [
+    {
+      topic: "Arithmetic",
+      subtopic: "Arithmetic",
+      query: "arithmetic percentages ratio proportion simplification averages"
+    },
+    {
+      topic: "Algebra",
+      subtopic: "Algebra",
+      query: "algebra linear equations quadratic equations expressions inequalities"
+    },
+    {
+      topic: "Geometry",
+      subtopic: "Geometry",
+      query: "geometry triangles circles mensuration angle area perimeter"
+    },
+    {
+      topic: "Probability",
+      subtopic: "Probability",
+      query: "probability combinations permutations events dice coins"
+    },
+    {
+      topic: "Statistics",
+      subtopic: "Statistics",
+      query: "statistics mean median mode standard deviation variance probability distribution"
+    }
+  ],
+  English: [
+    {
+      topic: "Grammar",
+      subtopic: "Grammar",
+      query: "english grammar tenses articles prepositions subject verb agreement"
+    },
+    {
+      topic: "Vocabulary",
+      subtopic: "Vocabulary",
+      query: "english vocabulary synonym antonym word meaning usage"
+    },
+    {
+      topic: "Reading Comprehension",
+      subtopic: "Reading Comprehension",
+      query: "english reading comprehension passage inference tone main idea"
+    }
+  ],
+  Physics: [
+    {
+      topic: "Mechanics",
+      subtopic: "Mechanics",
+      query: "physics mechanics force motion work energy momentum"
+    },
+    {
+      topic: "Thermodynamics",
+      subtopic: "Thermodynamics",
+      query: "physics thermodynamics heat temperature entropy laws"
+    },
+    {
+      topic: "Optics",
+      subtopic: "Optics",
+      query: "physics optics mirrors lenses refraction reflection"
+    },
+    {
+      topic: "Modern Physics",
+      subtopic: "Modern Physics",
+      query: "modern physics atoms nuclei photoelectric effect bohr"
+    },
+  ],
+  Astronomy: [
+    {
+      topic: "Celestial Mechanics",
+      subtopic: "Orbital Motion",
+      query: "astronomy orbital motion kepler laws gravitation planets satellites"
+    },
+    {
+      topic: "Stars and Galaxies",
+      subtopic: "Stellar Evolution",
+      query: "astronomy stars galaxies stellar evolution red giant white dwarf supernova"
+    },
+    {
+      topic: "Observational Astronomy",
+      subtopic: "Telescopes",
+      query: "astronomy telescopes light year apparent magnitude spectroscopy"
+    }
+  ],
+  Chemistry: [
+    {
+      topic: "Physical Chemistry",
+      subtopic: "Physical Chemistry",
+      query: "physical chemistry equilibrium thermodynamics kinetics electrochemistry"
+    },
+    {
+      topic: "Organic Chemistry",
+      subtopic: "Organic Chemistry",
+      query: "organic chemistry hydrocarbons reactions functional groups isomerism"
+    },
+    {
+      topic: "Inorganic Chemistry",
+      subtopic: "Inorganic Chemistry",
+      query: "inorganic chemistry periodic table bonding coordination compounds"
+    }
+  ],
+  Biology: [
+    {
+      topic: "Cell Biology",
+      subtopic: "Cell Structure",
+      query: "biology cell structure organelles membrane nucleus mitochondria"
+    },
+    {
+      topic: "Genetics",
+      subtopic: "Inheritance",
+      query: "biology genetics inheritance dna rna gene chromosome mendel"
+    },
+    {
+      topic: "Human Physiology",
+      subtopic: "Systems",
+      query: "biology human physiology circulatory respiratory digestive nervous system"
+    }
+  ],
+  "Computer Security": [
+    {
+      topic: "Cryptography",
+      subtopic: "Cryptography",
+      query: "computer security cryptography hashing encryption symmetric asymmetric digital signature"
+    },
+    {
+      topic: "Network Security",
+      subtopic: "Network Security",
+      query: "computer security network security firewalls tls ssl ids ips attacks"
+    },
+    {
+      topic: "Application Security",
+      subtopic: "Application Security",
+      query: "computer security application security sql injection xss csrf secure coding"
+    },
+    {
+      topic: "Authentication and Access",
+      subtopic: "Authentication and Access",
+      query: "computer security authentication authorization access control mfa kerberos oauth"
+    }
+  ],
+  "Machine Learning": [
+    {
+      topic: "Supervised Learning",
+      subtopic: "Classification",
+      query: "machine learning classification logistic regression decision tree svm labels"
+    },
+    {
+      topic: "Supervised Learning",
+      subtopic: "Regression",
+      query: "machine learning regression linear regression prediction continuous target"
+    },
+    {
+      topic: "Unsupervised Learning",
+      subtopic: "Clustering",
+      query: "machine learning clustering k means hierarchical clustering unsupervised"
+    },
+    {
+      topic: "Model Evaluation",
+      subtopic: "Metrics",
+      query: "machine learning precision recall f1 accuracy cross validation overfitting"
+    }
+  ],
   TOC: [
     {
       topic: "Formal Languages",
@@ -418,19 +579,147 @@ const HUGGINGFACE_ANSWER_KEY_TO_INDEX = {
 const HUGGINGFACE_DOMAIN_SUBJECT_MAP = {
   "computer network": "CN",
   "computer networks": "CN",
+  "computer security": "Computer Security",
+  "computer science": "Miscellaneous CS",
   "data structure and algorithm": "DSA",
   "data structures and algorithms": "DSA",
   "database": "DBMS",
   "dbms": "DBMS",
+  "machine learning": "Machine Learning",
   "operating system": "OS",
   "operating systems": "OS",
   "computer organization and architecture": "COA",
   "computer organization": "COA",
   "computer architecture": "COA",
   "discrete mathematics": "Maths",
+  astronomy: "Astronomy",
+  biology: "Biology",
   "theory of computation": "TOC",
   "miscellaneous cs": "Miscellaneous CS"
 };
+const COMPUTER_CLASSIFICATION_SUBJECTS = [
+  "OS",
+  "DBMS",
+  "COA",
+  "CN",
+  "DSA",
+  "TOC",
+  "Miscellaneous CS",
+  "Computer Security",
+  "Machine Learning"
+];
+const MMLU_CONFIGS = [
+  {
+    configName: "abstract_algebra",
+    subject: "General Maths",
+    topic: "Algebra",
+    subtopic: "Algebra"
+  },
+  {
+    configName: "astronomy",
+    subject: "Astronomy",
+    topic: "Celestial Mechanics",
+    subtopic: "Orbital Motion"
+  },
+  {
+    configName: "college_biology",
+    subject: "Biology",
+    topic: "Genetics",
+    subtopic: "Inheritance"
+  },
+  {
+    configName: "college_mathematics",
+    subject: "General Maths",
+    topic: "Algebra",
+    subtopic: "Algebra"
+  },
+  {
+    configName: "elementary_mathematics",
+    subject: "General Maths",
+    topic: "Arithmetic",
+    subtopic: "Arithmetic"
+  },
+  {
+    configName: "high_school_mathematics",
+    subject: "General Maths",
+    topic: "Algebra",
+    subtopic: "Algebra"
+  },
+  {
+    configName: "high_school_biology",
+    subject: "Biology",
+    topic: "Cell Biology",
+    subtopic: "Cell Structure"
+  },
+  {
+    configName: "high_school_statistics",
+    subject: "General Maths",
+    topic: "Statistics",
+    subtopic: "Statistics"
+  },
+  {
+    configName: "formal_logic",
+    subject: "Maths",
+    topic: "Discrete Mathematics",
+    subtopic: "Logic"
+  },
+  {
+    configName: "college_physics",
+    subject: "Physics",
+    topic: "Mechanics",
+    subtopic: "Mechanics"
+  },
+  {
+    configName: "conceptual_physics",
+    subject: "Physics",
+    topic: "Mechanics",
+    subtopic: "Mechanics"
+  },
+  {
+    configName: "high_school_physics",
+    subject: "Physics",
+    topic: "Mechanics",
+    subtopic: "Mechanics"
+  },
+  {
+    configName: "college_chemistry",
+    subject: "Chemistry",
+    topic: "Physical Chemistry",
+    subtopic: "Physical Chemistry"
+  },
+  {
+    configName: "high_school_chemistry",
+    subject: "Chemistry",
+    topic: "Physical Chemistry",
+    subtopic: "Physical Chemistry"
+  },
+  {
+    configName: "college_computer_science",
+    subject: "Miscellaneous CS",
+    allowedSubjects: COMPUTER_CLASSIFICATION_SUBJECTS,
+    topic: "Computer Science Fundamentals",
+    subtopic: "Language Concepts"
+  },
+  {
+    configName: "high_school_computer_science",
+    subject: "Miscellaneous CS",
+    allowedSubjects: COMPUTER_CLASSIFICATION_SUBJECTS,
+    topic: "Computer Science Fundamentals",
+    subtopic: "Language Concepts"
+  },
+  {
+    configName: "computer_security",
+    subject: "Computer Security",
+    topic: "Cryptography",
+    subtopic: "Cryptography"
+  },
+  {
+    configName: "machine_learning",
+    subject: "Machine Learning",
+    topic: "Supervised Learning",
+    subtopic: "Classification"
+  }
+];
 const SUBTOPIC_ALIAS_MAP = {
   OS: {
     Scheduling: ["cpu scheduling", "round robin", "priority scheduling", "sjf", "fcfs"],
@@ -462,6 +751,51 @@ const SUBTOPIC_ALIAS_MAP = {
     Counting: ["permutation", "combination", "pigeonhole", "counting"],
     "Trees and Connectivity": ["graph theory", "spanning tree", "connectivity", "degree"]
   },
+  "General Maths": {
+    Arithmetic: ["percentage", "ratio", "proportion", "average", "profit loss"],
+    Algebra: ["equation", "quadratic", "inequality", "expression", "variable"],
+    Geometry: ["triangle", "circle", "angle", "area", "perimeter"],
+    Probability: ["probability", "event", "sample space", "dice", "coin"],
+    Statistics: ["statistics", "mean", "median", "mode", "variance", "standard deviation"]
+  },
+  English: {
+    Grammar: ["tense", "article", "preposition", "subject verb agreement", "adjective"],
+    Vocabulary: ["synonym", "antonym", "meaning", "word usage", "idiom"],
+    "Reading Comprehension": ["passage", "inference", "tone", "main idea", "author"]
+  },
+  Physics: {
+    Mechanics: ["force", "motion", "velocity", "acceleration", "momentum"],
+    Thermodynamics: ["heat", "temperature", "entropy", "law of thermodynamics", "engine"],
+    Optics: ["reflection", "refraction", "lens", "mirror", "focal length"],
+    "Modern Physics": ["photoelectric", "atom", "nucleus", "bohr", "radioactivity"]
+  },
+  Astronomy: {
+    "Orbital Motion": ["orbit", "orbital", "kepler", "gravitation", "planet", "satellite"],
+    "Stellar Evolution": ["star", "stellar", "supernova", "red giant", "white dwarf", "galaxy"],
+    Telescopes: ["telescope", "spectroscopy", "magnitude", "light year", "observation"]
+  },
+  Chemistry: {
+    "Physical Chemistry": ["equilibrium", "kinetics", "electrochemistry", "ph", "enthalpy"],
+    "Organic Chemistry": ["hydrocarbon", "functional group", "isomer", "reaction mechanism"],
+    "Inorganic Chemistry": ["periodic table", "bonding", "coordination", "salt", "metal"]
+  },
+  Biology: {
+    "Cell Structure": ["cell", "organelle", "membrane", "nucleus", "mitochondria"],
+    Inheritance: ["genetics", "gene", "dna", "rna", "chromosome", "mendel"],
+    Systems: ["physiology", "circulatory", "respiratory", "digestive", "nervous system"]
+  },
+  "Computer Security": {
+    Cryptography: ["encryption", "decryption", "rsa", "aes", "hashing", "digital signature"],
+    "Network Security": ["tls", "ssl", "firewall", "ids", "ips", "dos"],
+    "Application Security": ["sql injection", "xss", "csrf", "secure coding", "sanitization"],
+    "Authentication and Access": ["authentication", "authorization", "access control", "mfa", "oauth", "kerberos"]
+  },
+  "Machine Learning": {
+    Classification: ["classification", "logistic regression", "decision tree", "svm", "labels"],
+    Regression: ["regression", "linear regression", "continuous target", "prediction"],
+    Clustering: ["clustering", "k means", "hierarchical clustering", "unsupervised"],
+    Metrics: ["precision", "recall", "f1", "accuracy", "cross validation", "overfitting"]
+  },
   TOC: {
     "Regular Languages": ["dfa", "nfa", "regular expression", "finite automata"],
     "Pushdown Automata": ["pda", "stack automata", "context free language"],
@@ -478,29 +812,133 @@ const SUBTOPIC_ALIAS_MAP = {
     Searching: ["binary search", "linear search", "searching"],
     Hashing: ["prefix sum", "sliding window", "frequency map", "hash table"],
     Operations: ["linked list", "reversal", "cycle detection", "insertion", "deletion"],
-    Stack: ["postfix", "infix", "prefix", "balanced parentheses", "monotonic stack"],
-    Queue: ["deque", "circular queue", "breadth first search", "queue"],
-    "Binary Search Tree": ["bst", "inorder", "successor", "binary search tree"],
-    "Binary Tree": ["preorder", "postorder", "tree traversal", "height of tree"],
+    Stack: ["stack", "postfix", "infix", "prefix", "balanced parentheses", "monotonic stack"],
+    Queue: ["queue", "deque", "circular queue", "fifo queue"],
+    "Binary Search Tree": ["bst", "binary search tree", "successor", "predecessor", "ordered tree"],
+    "Binary Tree": ["binary tree", "preorder", "postorder", "inorder traversal", "height of tree", "leaf node"],
     "Divide and Conquer": ["merge sort", "quicksort", "pivot", "divide and conquer"],
     "Heap Sort": ["heap sort", "heapify", "sorting with heap"],
-    Traversal: ["bfs", "dfs", "graph traversal", "cycle detection"],
-    "Shortest Path": ["dijkstra", "bellman ford", "shortest path"],
-    "Priority Queue": ["binary heap", "max heap", "min heap", "priority queue"],
+    Traversal: ["bfs", "dfs", "graph traversal", "adjacency list", "adjacency matrix", "edge", "vertex"],
+    "Shortest Path": ["dijkstra", "bellman ford", "shortest path", "weighted graph"],
+    "Priority Queue": ["priority queue", "binary heap", "max heap", "min heap", "extract min", "extract max"],
     "DP Basics": ["memoization", "tabulation", "optimal substructure", "overlapping subproblems"],
     "Greedy Strategy": ["greedy", "activity selection", "huffman", "interval scheduling"],
     Recursion: ["base case", "backtracking", "recursive"]
+  }
+};
+const TOPIC_ALIAS_MAP = {
+  OS: {
+    "Process Management": ["process", "cpu scheduling", "context switch", "deadlock", "process state"],
+    "Memory Management": ["memory", "page", "paging", "virtual memory", "page fault"],
+    Synchronization: ["semaphore", "mutex", "critical section", "synchronization", "producer consumer"]
+  },
+  DBMS: {
+    "Relational Model": ["relation", "schema", "normalization", "functional dependency"],
+    "Transaction Management": ["transaction", "acid", "serializability", "rollback", "commit"],
+    Indexing: ["index", "b tree", "b+ tree", "range query"],
+    "Concurrency Control": ["locking", "lock", "2pl", "shared lock", "exclusive lock"]
+  },
+  COA: {
+    "Digital Logic": ["logic gate", "boolean", "k map", "minterm", "maxterm"],
+    "Processor Organization": ["pipeline", "hazard", "forwarding", "throughput", "stall"],
+    "Memory Organization": ["cache", "cache memory", "mapping", "hit", "miss"],
+    "Instruction Set Architecture": ["addressing mode", "instruction", "register", "direct", "indirect"]
+  },
+  CN: {
+    "Network Layers": ["osi", "layer", "network layer model", "tcp ip"],
+    "Transport Layer": ["tcp", "udp", "sliding window", "flow control", "congestion control"],
+    "Network Layer": ["routing", "router", "path", "packet forwarding", "dijkstra"],
+    "Application Layer": ["dns", "http", "https", "application layer", "web protocol"]
+  },
+  Maths: {
+    "Discrete Mathematics": ["logic", "relation", "function", "predicate", "bijection"],
+    Combinatorics: ["counting", "permutation", "combination", "pigeonhole"],
+    "Graph Theory": ["graph", "tree", "connectivity", "spanning tree", "degree"]
+  },
+  "General Maths": {
+    Arithmetic: ["arithmetic", "percentage", "ratio", "average", "number"],
+    Algebra: ["algebra", "equation", "variable", "quadratic", "expression"],
+    Geometry: ["geometry", "triangle", "circle", "angle", "mensuration"],
+    Probability: ["probability", "combinatorics", "event", "chance", "random"],
+    Statistics: ["statistics", "mean", "median", "mode", "variance", "deviation"]
+  },
+  English: {
+    Grammar: ["grammar", "sentence", "tense", "article", "preposition"],
+    Vocabulary: ["vocabulary", "word", "synonym", "antonym", "meaning"],
+    "Reading Comprehension": ["reading", "comprehension", "passage", "inference", "tone"]
+  },
+  Physics: {
+    Mechanics: ["mechanics", "motion", "force", "energy", "momentum"],
+    Thermodynamics: ["thermodynamics", "heat", "temperature", "entropy", "engine"],
+    Optics: ["optics", "lens", "mirror", "reflection", "refraction"],
+    "Modern Physics": ["modern physics", "atom", "nucleus", "photoelectric", "bohr"]
+  },
+  Astronomy: {
+    "Celestial Mechanics": ["astronomy", "orbit", "kepler", "gravitation", "planet", "satellite"],
+    "Stars and Galaxies": ["star", "stellar", "galaxy", "supernova", "white dwarf"],
+    "Observational Astronomy": ["telescope", "spectroscopy", "magnitude", "observation", "light year"]
+  },
+  Chemistry: {
+    "Physical Chemistry": ["physical chemistry", "equilibrium", "kinetics", "electrochemistry", "thermodynamics"],
+    "Organic Chemistry": ["organic chemistry", "hydrocarbon", "functional group", "reaction", "isomer"],
+    "Inorganic Chemistry": ["inorganic chemistry", "periodic table", "bonding", "compound", "salt"]
+  },
+  Biology: {
+    "Cell Biology": ["cell biology", "cell", "organelle", "membrane", "nucleus"],
+    Genetics: ["genetics", "gene", "dna", "rna", "chromosome", "inheritance"],
+    "Human Physiology": ["physiology", "circulatory", "respiratory", "digestive", "nervous"]
+  },
+  "Computer Security": {
+    Cryptography: ["cryptography", "encryption", "decryption", "hashing", "digital signature"],
+    "Network Security": ["network security", "tls", "ssl", "firewall", "intrusion", "attack"],
+    "Application Security": ["application security", "sql injection", "xss", "csrf", "secure coding"],
+    "Authentication and Access": ["authentication", "authorization", "access control", "mfa", "oauth", "kerberos"]
+  },
+  "Machine Learning": {
+    "Supervised Learning": ["machine learning", "classification", "regression", "training data", "labels"],
+    "Unsupervised Learning": ["clustering", "unsupervised", "k means", "dimensionality reduction"],
+    "Model Evaluation": ["precision", "recall", "f1", "accuracy", "cross validation", "overfitting"]
+  },
+  TOC: {
+    "Formal Languages": ["regular language", "dfa", "nfa", "regular expression"],
+    Automata: ["pda", "pushdown automata", "stack automata"],
+    Computability: ["turing machine", "decidable", "undecidable", "halting problem"],
+    Grammar: ["cfg", "context free grammar", "ambiguity", "derivation", "grammar"]
+  },
+  "Miscellaneous CS": {
+    "Programming Languages": ["compiler", "interpreter", "typing", "polymorphism", "language"],
+    "Software Engineering": ["testing", "design pattern", "cohesion", "coupling", "integration"],
+    Security: ["security", "authentication", "authorization", "hashing", "encryption"],
+    "Algorithms and Analysis": ["big o", "omega", "theta", "complexity", "asymptotic"]
+  },
+  DSA: {
+    Arrays: ["array", "subarray", "search", "hashing", "prefix sum", "sliding window"],
+    "Linked Lists": ["linked list", "node", "pointer", "cycle detection", "reverse list"],
+    "Stacks and Queues": ["stack", "queue", "deque", "parentheses", "lifo", "fifo"],
+    Trees: ["tree", "binary tree", "bst", "inorder", "preorder", "postorder", "leaf", "height"],
+    Sorting: ["sort", "sorting", "merge sort", "quick sort", "quicksort", "heap sort", "partition"],
+    Graphs: ["graph", "graphs", "edge", "edges", "vertex", "vertices", "bfs", "dfs", "adjacency"],
+    Heaps: ["heap", "priority queue", "min heap", "max heap", "heapify"],
+    "Dynamic Programming": ["dp", "memoization", "tabulation", "optimal substructure"],
+    Greedy: ["greedy", "interval scheduling", "activity selection", "huffman"],
+    Recursion: ["recursion", "recursive", "backtracking", "base case"]
   }
 };
 const HIERARCHICAL_CLUSTERING = Object.freeze({
   subjectHintBoost: 0.85,
   subjectCentroidWeight: 0.65,
   subjectLexicalWeight: 0.35,
-  subtopicCentroidWeight: 0.52,
-  subtopicLexicalWeight: 0.2,
-  subtopicAliasWeight: 0.28,
+  topicCentroidWeight: 0.48,
+  topicLexicalWeight: 0.22,
+  topicAliasWeight: 0.3,
+  subtopicCentroidWeight: 0.42,
+  subtopicLexicalWeight: 0.16,
+  subtopicAliasWeight: 0.18,
+  subtopicTopicWeight: 0.24,
   minimumSubjectConfidence: 0.32,
-  minimumSubtopicConfidence: 0.24,
+  minimumTopicConfidence: 0.28,
+  minimumSubtopicConfidence: 0.32,
+  minimumSubtopicMargin: 0.08,
   difficultyIterations: 16
 });
 const providerBackoffState = {
@@ -518,6 +956,18 @@ const providerBackoffState = {
   },
   huggingface: {
     provider: "Hugging Face Dataset Server",
+    until: null,
+    reason: null,
+    triggeredAt: null
+  },
+  mmlu: {
+    provider: "Hugging Face MMLU Dataset",
+    until: null,
+    reason: null,
+    triggeredAt: null
+  },
+  englishgrammar: {
+    provider: "Hugging Face English Grammar Dataset",
     until: null,
     reason: null,
     triggeredAt: null
@@ -1144,7 +1594,9 @@ function questionTokenSet(question) {
     ...((question.options || []).map((option) => option.text)),
     ...(question.metadata?.tags || []),
     question.metadata?.providerCategory,
+    question.metadata?.providerSubCategory,
     question.metadata?.sourceCategory,
+    question.metadata?.sourceSubtopic,
     question.metadata?.sourceName
   ];
 
@@ -1259,6 +1711,38 @@ function profilePrototypeFrequency(subject, topic, subtopic) {
   );
 }
 
+function topicPrototypeFrequency(subject, topic) {
+  const topicAliases = TOPIC_ALIAS_MAP[subject]?.[topic] || [];
+  const profileText = (SUBJECT_PROFILES[subject] || [])
+    .filter((profile) => profile.topic === topic)
+    .flatMap((profile) => [
+      profile.subtopic,
+      profile.query,
+      ...(SUBTOPIC_ALIAS_MAP[subject]?.[profile.subtopic] || [])
+    ])
+    .join(" ");
+
+  return weightedTokenFrequency(
+    {
+      subject,
+      topic,
+      subtopic: topic,
+      prompt: "",
+      explanation: "",
+      options: [],
+      acceptedAnswers: [],
+      metadata: {
+        providerCategory: `${topic} ${topicAliases.join(" ")}`,
+        providerSubCategory: profileText,
+        sourceCategory: topic,
+        sourceSubtopic: profileText,
+        tags: [topic, ...topicAliases]
+      }
+    },
+    { includeLabels: true }
+  );
+}
+
 function aliasHintScore(question, anchor) {
   const hintText = [
     question.metadata?.providerSubCategory,
@@ -1296,6 +1780,46 @@ function aliasHintScore(question, anchor) {
   return Number((overlap / anchorTokens.size).toFixed(4));
 }
 
+function topicAliasHintScore(question, anchor) {
+  const hintText = [
+    question.metadata?.providerCategory,
+    question.metadata?.providerSubCategory,
+    question.metadata?.sourceCategory,
+    question.metadata?.sourceSubtopic,
+    ...(question.metadata?.tags || [])
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const hintTokens = new Set(keywordTokens(hintText));
+  if (!hintTokens.size) {
+    return 0;
+  }
+
+  const anchorTokens = new Set(
+    keywordTokens(
+      [
+        anchor.topic,
+        ...(TOPIC_ALIAS_MAP[anchor.subject]?.[anchor.topic] || []),
+        ...(SUBJECT_PROFILES[anchor.subject] || [])
+          .filter((profile) => profile.topic === anchor.topic)
+          .flatMap((profile) => [profile.subtopic, profile.query])
+      ].join(" ")
+    )
+  );
+  if (!anchorTokens.size) {
+    return 0;
+  }
+
+  let overlap = 0;
+  for (const token of hintTokens) {
+    if (anchorTokens.has(token)) {
+      overlap += 1;
+    }
+  }
+
+  return Number((overlap / anchorTokens.size).toFixed(4));
+}
+
 function anchorQuestionCandidates(existingQuestions, allowedSubjects) {
   return existingQuestions.filter((question) => {
     if (!allowedSubjects.includes(question.subject)) {
@@ -1309,12 +1833,22 @@ function anchorQuestionCandidates(existingQuestions, allowedSubjects) {
 
 function buildSeedAnchors(existingQuestions, allowedSubjects = supportedCrawlerSubjects) {
   const subjectAnchors = new Map();
+  const topicBuckets = new Map();
   const subtopicBuckets = new Map();
   const anchorQuestions = anchorQuestionCandidates(existingQuestions, allowedSubjects);
 
   for (const subject of allowedSubjects) {
     subjectAnchors.set(subject, new Map());
     for (const profile of SUBJECT_PROFILES[subject] || []) {
+      const topicKey = `${subject}::${profile.topic}`;
+      if (!topicBuckets.has(topicKey)) {
+        topicBuckets.set(topicKey, {
+          subject,
+          topic: profile.topic,
+          frequency: topicPrototypeFrequency(subject, profile.topic),
+          count: 0
+        });
+      }
       const bucketKey = `${subject}::${profile.topic}::${profile.subtopic}`;
       if (!subtopicBuckets.has(bucketKey)) {
         subtopicBuckets.set(bucketKey, {
@@ -1334,6 +1868,19 @@ function buildSeedAnchors(existingQuestions, allowedSubjects = supportedCrawlerS
     mergeFrequencyInto(subjectFrequency, questionFrequency);
 
     subjectAnchors.set(question.subject, subjectFrequency);
+    const topicKey = `${question.subject}::${question.topic}`;
+    if (!topicBuckets.has(topicKey)) {
+      topicBuckets.set(topicKey, {
+        subject: question.subject,
+        topic: question.topic,
+        frequency: new Map(),
+        count: 0
+      });
+    }
+    const topicBucket = topicBuckets.get(topicKey);
+    mergeFrequencyInto(topicBucket.frequency, questionFrequency);
+    topicBucket.count += 1;
+
     const bucketKey = `${question.subject}::${question.topic}::${question.subtopic}`;
     if (!subtopicBuckets.has(bucketKey)) {
       subtopicBuckets.set(bucketKey, {
@@ -1352,6 +1899,12 @@ function buildSeedAnchors(existingQuestions, allowedSubjects = supportedCrawlerS
 
   return {
     subjectAnchors,
+    topicAnchors: [...topicBuckets.values()].map((bucket) => ({
+      subject: bucket.subject,
+      topic: bucket.topic,
+      frequency: cloneFrequency(bucket.frequency),
+      count: bucket.count
+    })),
     subtopicAnchors: [...subtopicBuckets.values()].map((bucket) => ({
       subject: bucket.subject,
       topic: bucket.topic,
@@ -1373,29 +1926,36 @@ function frequencyOverlapScore(questionFrequency, anchorFrequency) {
   return score;
 }
 
-function bestSubtopicAnchor(subject, question, questionFrequency, tokens, seedAnchors) {
-  const candidates = seedAnchors.subtopicAnchors.filter((anchor) => anchor.subject === subject);
+function bestTopicAnchor(subject, question, questionFrequency, tokens, seedAnchors) {
+  const candidates = (seedAnchors.topicAnchors || []).filter((anchor) => anchor.subject === subject);
   if (!candidates.length) {
     return null;
   }
 
-  return candidates.reduce((best, anchor) => {
-    const centroidSimilarity = cosineFrequencySimilarity(questionFrequency, anchor.frequency);
-    const lexical = scoreProfileMatch(tokens, {
-      topic: anchor.topic,
-      subtopic: anchor.subtopic,
-      query: `${anchor.topic} ${anchor.subtopic}`
-    });
-    const lexicalScore = normalizeLexicalScore(lexical.score, lexical.strongMatches);
-    const aliasScore = aliasHintScore(question, anchor);
-    const score = Number(
-      (
-        centroidSimilarity * HIERARCHICAL_CLUSTERING.subtopicCentroidWeight +
-        lexicalScore * HIERARCHICAL_CLUSTERING.subtopicLexicalWeight +
-        aliasScore * HIERARCHICAL_CLUSTERING.subtopicAliasWeight
-      ).toFixed(4)
-    );
-    if (!best || score > best.score) {
+  const ranked = candidates
+    .map((anchor) => {
+      const centroidSimilarity = cosineFrequencySimilarity(questionFrequency, anchor.frequency);
+      const matchingProfiles = (SUBJECT_PROFILES[subject] || []).filter((profile) => profile.topic === anchor.topic);
+      const lexical = matchingProfiles.reduce(
+        (best, profile) => {
+          const score = scoreProfileMatch(tokens, profile);
+          if (!best || score.score > best.score || (score.score === best.score && score.strongMatches > best.strongMatches)) {
+            return score;
+          }
+          return best;
+        },
+        null
+      ) || { score: 0, strongMatches: 0 };
+      const lexicalScore = normalizeLexicalScore(lexical.score, lexical.strongMatches);
+      const aliasScore = topicAliasHintScore(question, anchor);
+      const score = Number(
+        (
+          centroidSimilarity * HIERARCHICAL_CLUSTERING.topicCentroidWeight +
+          lexicalScore * HIERARCHICAL_CLUSTERING.topicLexicalWeight +
+          aliasScore * HIERARCHICAL_CLUSTERING.topicAliasWeight
+        ).toFixed(4)
+      );
+
       return {
         ...anchor,
         score,
@@ -1404,9 +1964,63 @@ function bestSubtopicAnchor(subject, question, questionFrequency, tokens, seedAn
         aliasScore,
         lexicalMatches: lexical
       };
-    }
-    return best;
-  }, null);
+    })
+    .sort((left, right) => right.score - left.score);
+
+  return {
+    best: ranked[0] || null,
+    runnerUp: ranked[1] || null
+  };
+}
+
+function broadFallbackSubtopic(subject, topic) {
+  const genericProfile = (SUBJECT_PROFILES[subject] || []).find((profile) => profile.topic === topic);
+  return genericProfile?.topic || topic;
+}
+
+function bestSubtopicAnchor(subject, topic, question, questionFrequency, tokens, seedAnchors) {
+  const candidates = (seedAnchors.subtopicAnchors || []).filter(
+    (anchor) => anchor.subject === subject && (!topic || anchor.topic === topic)
+  );
+  if (!candidates.length) {
+    return null;
+  }
+
+  const ranked = candidates
+    .map((anchor) => {
+      const centroidSimilarity = cosineFrequencySimilarity(questionFrequency, anchor.frequency);
+      const lexical = scoreProfileMatch(tokens, {
+        topic: anchor.topic,
+        subtopic: anchor.subtopic,
+        query: `${anchor.topic} ${anchor.subtopic}`
+      });
+      const lexicalScore = normalizeLexicalScore(lexical.score, lexical.strongMatches);
+      const aliasScore = aliasHintScore(question, anchor);
+      const topicConsistency = anchor.topic === topic ? 1 : 0;
+      const score = Number(
+        (
+          centroidSimilarity * HIERARCHICAL_CLUSTERING.subtopicCentroidWeight +
+          lexicalScore * HIERARCHICAL_CLUSTERING.subtopicLexicalWeight +
+          aliasScore * HIERARCHICAL_CLUSTERING.subtopicAliasWeight +
+          topicConsistency * HIERARCHICAL_CLUSTERING.subtopicTopicWeight
+        ).toFixed(4)
+      );
+
+      return {
+        ...anchor,
+        score,
+        centroidSimilarity,
+        lexicalScore,
+        aliasScore,
+        lexicalMatches: lexical
+      };
+    })
+    .sort((left, right) => right.score - left.score);
+
+  return {
+    best: ranked[0] || null,
+    runnerUp: ranked[1] || null
+  };
 }
 
 function sourceSubjectHint(question, allowedSubjects) {
@@ -1560,19 +2174,34 @@ export function refineQuestionAssignments(
 
     const questionFrequency = weightedTokenFrequency(question, { includeLabels: false });
     const questionTokens = questionTokenSet(question);
-    const subtopicAnchor = bestSubtopicAnchor(
+    const topicAnchorResult = bestTopicAnchor(
       assignment.subject,
       question,
       questionFrequency,
       questionTokens,
       seedAnchors
     );
-    const topic = subtopicAnchor?.score >= HIERARCHICAL_CLUSTERING.minimumSubtopicConfidence
-      ? subtopicAnchor.topic
+    const topicBest = topicAnchorResult?.best || null;
+    const topicRunnerUp = topicAnchorResult?.runnerUp || null;
+    const topicMargin = Number(((topicBest?.score || 0) - (topicRunnerUp?.score || 0)).toFixed(4));
+    const topic = topicBest?.score >= HIERARCHICAL_CLUSTERING.minimumTopicConfidence && topicMargin >= 0.04
+      ? topicBest.topic
       : assignment.profile.topic;
-    const subtopic = subtopicAnchor?.score >= HIERARCHICAL_CLUSTERING.minimumSubtopicConfidence
-      ? subtopicAnchor.subtopic
-      : assignment.profile.subtopic;
+    const subtopicAnchorResult = bestSubtopicAnchor(
+      assignment.subject,
+      topic,
+      question,
+      questionFrequency,
+      questionTokens,
+      seedAnchors
+    );
+    const subtopicBest = subtopicAnchorResult?.best || null;
+    const subtopicRunnerUp = subtopicAnchorResult?.runnerUp || null;
+    const subtopicMargin = Number(((subtopicBest?.score || 0) - (subtopicRunnerUp?.score || 0)).toFixed(4));
+    const subtopic = subtopicBest?.score >= HIERARCHICAL_CLUSTERING.minimumSubtopicConfidence &&
+      subtopicMargin >= HIERARCHICAL_CLUSTERING.minimumSubtopicMargin
+      ? subtopicBest.subtopic
+      : broadFallbackSubtopic(assignment.subject, topic);
 
     refined.push(
       normalizeQuestion({
@@ -1586,21 +2215,28 @@ export function refineQuestionAssignments(
             method: "hierarchical-seed-centroid-clustering",
             score: assignment.score,
             centroidSimilarity: assignment.centroidSimilarity,
-            lexicalScore: assignment.lexicalScore,
-            compositeScore: assignment.compositeScore,
-            strongMatches: assignment.strongMatches,
-            confidence: assignment.confidence,
-            tokenCount: assignment.tokenCount,
-            sourceSubjectHint: sourceSubjectHint(question, allowedSubjects),
-            anchorTopic: subtopicAnchor?.topic || null,
-            anchorSubtopic: subtopicAnchor?.subtopic || null,
-            subtopicCentroidSimilarity: subtopicAnchor?.centroidSimilarity || 0,
-            subtopicLexicalScore: subtopicAnchor?.lexicalScore || 0,
-            subtopicAliasScore: subtopicAnchor?.aliasScore || 0,
-            subtopicCompositeScore: subtopicAnchor?.score || 0
+              lexicalScore: assignment.lexicalScore,
+              compositeScore: assignment.compositeScore,
+              strongMatches: assignment.strongMatches,
+              confidence: assignment.confidence,
+              tokenCount: assignment.tokenCount,
+              sourceSubjectHint: sourceSubjectHint(question, allowedSubjects),
+              anchorTopic: topicBest?.topic || assignment.profile.topic,
+              anchorSubtopic: subtopicBest?.subtopic || null,
+              topicCentroidSimilarity: topicBest?.centroidSimilarity || 0,
+              topicLexicalScore: topicBest?.lexicalScore || 0,
+              topicAliasScore: topicBest?.aliasScore || 0,
+              topicCompositeScore: topicBest?.score || 0,
+              topicMargin,
+              subtopicCentroidSimilarity: subtopicBest?.centroidSimilarity || 0,
+              subtopicLexicalScore: subtopicBest?.lexicalScore || 0,
+              subtopicAliasScore: subtopicBest?.aliasScore || 0,
+              subtopicCompositeScore: subtopicBest?.score || 0,
+              subtopicMargin,
+              usedBroadSubtopicFallback: subtopic !== (subtopicBest?.subtopic || "")
+            }
           }
-        }
-      })
+        })
     );
   }
 
@@ -1826,57 +2462,162 @@ function normalizeHuggingFaceSubtopic(value) {
   return cleaned || "Overview";
 }
 
-function huggingFaceOffsetSeed(subjects) {
-  const estimate = Math.max(config.huggingFaceDatasetEstimatedRows, 100);
+function titleCaseConfigLabel(value) {
+  return String(value || "")
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((token) => token.charAt(0).toUpperCase() + token.slice(1))
+    .join(" ");
+}
+
+function mmluAllowedSubjects(configEntry) {
+  return uniqueStrings([configEntry.subject, ...(configEntry.allowedSubjects || [])]);
+}
+
+function mmluConfigsForSubjects(subjects) {
+  return MMLU_CONFIGS.filter((entry) =>
+    mmluAllowedSubjects(entry).some((subject) => subjects.includes(subject))
+  );
+}
+
+function resolveMmluSubject(configEntry, allowedSubjects) {
+  const matchedSubject = mmluAllowedSubjects(configEntry).find((subject) =>
+    allowedSubjects.includes(subject)
+  );
+  return matchedSubject || configEntry.subject;
+}
+
+function normalizeMmluChoices(row) {
+  if (Array.isArray(row.choices)) {
+    return row.choices.map((choice) => String(choice || "").trim()).filter(Boolean);
+  }
+
+  if (Array.isArray(row.options)) {
+    return row.options.map((choice) => String(choice || "").trim()).filter(Boolean);
+  }
+
+  if (row.choices && typeof row.choices === "object") {
+    return Object.values(row.choices).map((choice) => String(choice || "").trim()).filter(Boolean);
+  }
+
+  return [row.A, row.B, row.C, row.D].map((choice) => String(choice || "").trim()).filter(Boolean);
+}
+
+function resolveMmluCorrectIndex(answerValue, choices) {
+  if (typeof answerValue === "number" && Number.isInteger(answerValue)) {
+    return answerValue >= 0 && answerValue < choices.length ? answerValue : null;
+  }
+
+  const normalized = String(answerValue ?? "").trim();
+  if (!normalized) {
+    return null;
+  }
+
+  if (/^\d+$/.test(normalized)) {
+    const parsed = Number(normalized);
+    if (parsed >= 0 && parsed < choices.length) {
+      return parsed;
+    }
+
+    if (parsed >= 1 && parsed <= choices.length) {
+      return parsed - 1;
+    }
+  }
+
+  const uppercase = normalized.toUpperCase();
+  if (uppercase in HUGGINGFACE_ANSWER_KEY_TO_INDEX) {
+    const candidate = HUGGINGFACE_ANSWER_KEY_TO_INDEX[uppercase];
+    return candidate < choices.length ? candidate : null;
+  }
+
+  const textMatch = choices.findIndex((choice) => compactText(choice) === compactText(normalized));
+  return textMatch >= 0 ? textMatch : null;
+}
+
+function datasetOffsetSeed(seedKey, estimate) {
   const slice = Math.floor(Date.now() / Math.max(config.crawlerMinimumGapMs, 60000));
-  const seed = createRemoteQuestionId(`hf:${subjects.join("|")}:${slice}`);
+  const seed = createRemoteQuestionId(`${seedKey}:${slice}`);
   return Math.abs(seed) % estimate;
 }
 
-function huggingFaceOffsetsForRun(subjects, desiredPerSubject) {
-  const estimate = Math.max(config.huggingFaceDatasetEstimatedRows, 100);
-  const pageLength = Math.max(config.huggingFaceDatasetLength, 20);
+function datasetOffsetsForRun({
+  seedKey,
+  estimate,
+  pageLength,
+  maxPages,
+  subjects,
+  desiredPerSubject,
+  multiplier = 4,
+  strategy = "rotating"
+}) {
   const requestedRows = Math.max(
-    desiredPerSubject * Math.max(subjects.length, 1) * 4,
+    desiredPerSubject * Math.max(subjects.length, 1) * multiplier,
     pageLength
   );
   const pageCount = Math.min(
-    Math.max(config.huggingFaceDatasetMaxPages, 1),
+    Math.max(maxPages, 1),
     Math.max(1, Math.ceil(requestedRows / pageLength))
   );
-  const baseOffset = huggingFaceOffsetSeed(subjects);
+  if (strategy === "sequential") {
+    return Array.from({ length: pageCount }, (_unused, index) => index * pageLength);
+  }
+
+  const baseOffset = datasetOffsetSeed(`${seedKey}:${subjects.join("|")}`, estimate);
 
   return Array.from({ length: pageCount }, (_unused, index) =>
     (baseOffset + (index * pageLength)) % estimate
   );
 }
 
-async function huggingFaceFetchRows(subjects, desiredPerSubject) {
-  if (!config.huggingFaceDatasetEnabled) {
+async function fetchRowsFromDatasetServer({
+  providerKey,
+  datasetName,
+  configName,
+  split,
+  enabled,
+  pageLength,
+  maxPages,
+  estimatedRows,
+  subjects,
+  desiredPerSubject,
+  seedKey,
+  multiplier = 4,
+  offsetStrategy = "rotating"
+}) {
+  if (!enabled) {
     return [];
   }
 
-  const skippedWarning = providerBackoffWarning("huggingface");
+  const skippedWarning = providerBackoffWarning(providerKey);
   if (skippedWarning) {
     throw new Error(skippedWarning);
   }
 
-  const pageLength = Math.max(config.huggingFaceDatasetLength, 20);
-  const offsets = huggingFaceOffsetsForRun(subjects, desiredPerSubject);
+  const resolvedLength = Math.max(pageLength, 20);
+  const offsets = datasetOffsetsForRun({
+    seedKey,
+    estimate: Math.max(estimatedRows, 100),
+    pageLength: resolvedLength,
+    maxPages,
+    subjects,
+    desiredPerSubject,
+    multiplier,
+    strategy: offsetStrategy
+  });
   const rows = [];
 
   for (const offset of offsets) {
     const url = new URL(config.huggingFaceDatasetApiBase);
-    url.searchParams.set("dataset", config.huggingFaceDatasetName);
-    url.searchParams.set("config", config.huggingFaceDatasetConfig);
-    url.searchParams.set("split", config.huggingFaceDatasetSplit);
+    url.searchParams.set("dataset", datasetName);
+    url.searchParams.set("config", configName);
+    url.searchParams.set("split", split);
     url.searchParams.set("offset", String(offset));
-    url.searchParams.set("length", String(pageLength));
+    url.searchParams.set("length", String(resolvedLength));
 
     const response = await fetch(url);
     if (!response.ok) {
       if (response.status === 429) {
-        setProviderBackoff("huggingface", "HTTP 429 Too Many Requests");
+        setProviderBackoff(providerKey, "HTTP 429 Too Many Requests");
       }
       throw new Error(`Hugging Face dataset server returned ${response.status}`);
     }
@@ -1885,8 +2626,69 @@ async function huggingFaceFetchRows(subjects, desiredPerSubject) {
     rows.push(...(Array.isArray(payload?.rows) ? payload.rows : []));
   }
 
-  clearProviderBackoff("huggingface");
+  clearProviderBackoff(providerKey);
   return rows;
+}
+
+async function huggingFaceFetchRows(subjects, desiredPerSubject) {
+  return fetchRowsFromDatasetServer({
+    providerKey: "huggingface",
+    datasetName: config.huggingFaceDatasetName,
+    configName: config.huggingFaceDatasetConfig,
+    split: config.huggingFaceDatasetSplit,
+    enabled: config.huggingFaceDatasetEnabled,
+    pageLength: config.huggingFaceDatasetLength,
+    maxPages: config.huggingFaceDatasetMaxPages,
+    estimatedRows: config.huggingFaceDatasetEstimatedRows,
+    subjects,
+    desiredPerSubject,
+    seedKey: "hf-csbench",
+    multiplier: 4
+  });
+}
+
+async function mmluFetchRows(subjects, desiredPerSubject) {
+  const configs = mmluConfigsForSubjects(subjects);
+  if (!configs.length || !config.mmluDatasetEnabled) {
+    return { rows: [], warnings: [] };
+  }
+
+  const desiredPerConfig = Math.max(
+    10,
+    Math.ceil(desiredPerSubject / Math.max(configs.length, 1))
+  );
+  const results = await Promise.allSettled(
+    configs.map((entry) =>
+      fetchRowsFromDatasetServer({
+        providerKey: "mmlu",
+        datasetName: config.mmluDatasetName,
+        configName: entry.configName,
+        split: config.mmluDatasetSplit,
+        enabled: config.mmluDatasetEnabled,
+        pageLength: config.mmluDatasetLength,
+        maxPages: config.mmluDatasetMaxPages,
+        estimatedRows: config.mmluDatasetEstimatedRows,
+        subjects: mmluAllowedSubjects(entry),
+        desiredPerSubject: desiredPerConfig,
+        seedKey: `hf-mmlu:${entry.configName}`,
+        multiplier: 1,
+        offsetStrategy: "sequential"
+      }).then((rows) => rows.map((row) => ({ configEntry: entry, row })))
+    )
+  );
+
+  const rows = [];
+  const warnings = [];
+  for (const result of results) {
+    if (result.status === "fulfilled") {
+      rows.push(...result.value);
+      continue;
+    }
+
+    warnings.push(`MMLU config fetch failed: ${result.reason?.message || "Unknown error"}`);
+  }
+
+  return { rows, warnings };
 }
 
 function buildHuggingFaceQuestion(entry, allowedSubjects) {
@@ -1961,6 +2763,127 @@ function buildHuggingFaceQuestion(entry, allowedSubjects) {
   });
 }
 
+function buildEnglishGrammarQuestion(entry) {
+  const row = entry?.row || entry || {};
+  const prompt = normalizeTitle(row.question || row.Question);
+  if (!prompt) {
+    return null;
+  }
+
+  const answerText = String(row.answer || row.Answer || "").trim();
+  const explanation = stripHtml(answerText).slice(0, 700);
+  if (!explanation) {
+    return null;
+  }
+
+  const acceptedAnswers = extractCandidatesFromAnswer(answerText);
+  if (!acceptedAnswers.length) {
+    return null;
+  }
+
+  const classification = classifyQuestionToProfile(
+    [
+      prompt,
+      row.instruction || row.Instruction || "",
+      answerText
+    ],
+    ["English"]
+  );
+
+  return normalizeQuestion({
+    id: createRemoteQuestionId(`english-grammar:${entry?.row_idx ?? prompt}`),
+    subject: "English",
+    topic: classification?.profile.topic || "Grammar",
+    subtopic: classification?.profile.subtopic || "Grammar",
+    type: "short_text",
+    prompt,
+    options: [],
+    acceptedAnswers,
+    explanation,
+    metadata: {
+      remote: true,
+      sourceName: "Hugging Face English Grammar",
+      sourceUrl: "https://huggingface.co/datasets/Teravee/1000_english-grammar-dataset",
+      sourceId: String(entry?.row_idx ?? prompt),
+      providerCategory: "English",
+      providerSubCategory: classification?.profile.subtopic || "Grammar",
+      sourceCategory: "English",
+      sourceSubtopic: classification?.profile.subtopic || "Grammar",
+      instruction: String(row.instruction || row.Instruction || "").trim()
+    }
+  });
+}
+
+function buildMmluQuestion(entry, allowedSubjects) {
+  const row = entry?.row?.row || entry?.row || entry || {};
+  const configEntry = entry?.configEntry;
+  if (!configEntry) {
+    return null;
+  }
+
+  const prompt = normalizeTitle(row.question || row.Question);
+  if (!prompt) {
+    return null;
+  }
+
+  const choices = normalizeMmluChoices(row);
+  if (choices.length < 2) {
+    return null;
+  }
+
+  const correctIndex = resolveMmluCorrectIndex(row.answer ?? row.Answer ?? row.target, choices);
+  if (!Number.isInteger(correctIndex) || !choices[correctIndex]) {
+    return null;
+  }
+
+  const classifierSubjects = mmluAllowedSubjects(configEntry).filter((subject) =>
+    allowedSubjects.includes(subject)
+  );
+  const fallbackSubject = resolveMmluSubject(configEntry, allowedSubjects);
+  const classification = classifyQuestionToProfile(
+    [
+      prompt,
+      ...choices,
+      configEntry.configName,
+      titleCaseConfigLabel(configEntry.configName)
+    ],
+    classifierSubjects.length ? classifierSubjects : [fallbackSubject]
+  );
+  const subject = classification?.subject || fallbackSubject;
+
+  const options = choices.map((text, index) => ({
+    id: String.fromCharCode(97 + index),
+    text,
+    isCorrect: index === correctIndex
+  }));
+
+  return normalizeQuestion({
+    id: createRemoteQuestionId(`mmlu:${configEntry.configName}:${entry?.row?.row_idx ?? entry?.row_idx ?? prompt}`),
+    subject,
+    topic: classification?.profile.topic || configEntry.topic,
+    subtopic: classification?.profile.subtopic || configEntry.subtopic,
+    type: "mcq",
+    prompt,
+    options,
+    acceptedAnswers: [],
+    explanation: stripHtml(row.explanation || row.Explanation || `Imported from Hugging Face MMLU (${titleCaseConfigLabel(configEntry.configName)}).`),
+    metadata: {
+      remote: true,
+      sourceName: "Hugging Face MMLU",
+      sourceUrl: "https://huggingface.co/datasets/cais/mmlu",
+      sourceId: String(entry?.row?.row_idx ?? entry?.row_idx ?? prompt),
+      sourceSubject: subject,
+      allowedSubjects: classifierSubjects,
+      providerCategory: titleCaseConfigLabel(configEntry.configName),
+      providerSubCategory: configEntry.subtopic,
+      sourceCategory: titleCaseConfigLabel(configEntry.configName),
+      sourceSubtopic: configEntry.subtopic,
+      configName: configEntry.configName,
+      split: config.mmluDatasetSplit
+    }
+  });
+}
+
 async function fetchHuggingFaceQuestions(subjects, desiredPerSubject) {
   if (!config.huggingFaceDatasetEnabled) {
     return { questions: [], warnings: [] };
@@ -1979,6 +2902,73 @@ async function fetchHuggingFaceQuestions(subjects, desiredPerSubject) {
     }
   } catch (error) {
     warnings.push(`Hugging Face dataset fetch failed: ${error.message || "Unknown error"}`);
+  }
+
+  return { questions, warnings };
+}
+
+async function fetchEnglishGrammarQuestions(subjects, desiredPerSubject) {
+  if (!subjects.includes("English") || !config.englishGrammarDatasetEnabled) {
+    return { questions: [], warnings: [] };
+  }
+
+  const questions = [];
+  const warnings = [];
+
+  try {
+    const rows = await fetchRowsFromDatasetServer({
+      providerKey: "englishgrammar",
+      datasetName: config.englishGrammarDatasetName,
+      configName: config.englishGrammarDatasetConfig,
+      split: config.englishGrammarDatasetSplit,
+      enabled: config.englishGrammarDatasetEnabled,
+      pageLength: config.englishGrammarDatasetLength,
+      maxPages: config.englishGrammarDatasetMaxPages,
+      estimatedRows: config.englishGrammarDatasetEstimatedRows,
+      subjects: ["English"],
+      desiredPerSubject,
+      seedKey: "hf-english-grammar",
+      multiplier: 3
+    });
+
+    for (const item of rows) {
+      const mapped = buildEnglishGrammarQuestion(item);
+      if (mapped) {
+        questions.push(mapped);
+      }
+    }
+  } catch (error) {
+    warnings.push(`English grammar dataset fetch failed: ${error.message || "Unknown error"}`);
+  }
+
+  return { questions, warnings };
+}
+
+async function fetchMmluQuestions(subjects, desiredPerSubject) {
+  if (!config.mmluDatasetEnabled) {
+    return { questions: [], warnings: [] };
+  }
+
+  const relevantConfigs = mmluConfigsForSubjects(subjects);
+  if (!relevantConfigs.length) {
+    return { questions: [], warnings: [] };
+  }
+
+  const questions = [];
+  const warnings = [];
+
+  try {
+    const result = await mmluFetchRows(subjects, desiredPerSubject);
+    warnings.push(...result.warnings);
+    const rows = result.rows;
+    for (const item of rows) {
+      const mapped = buildMmluQuestion(item, subjects);
+      if (mapped) {
+        questions.push(mapped);
+      }
+    }
+  } catch (error) {
+    warnings.push(`MMLU dataset fetch failed: ${error.message || "Unknown error"}`);
   }
 
   return { questions, warnings };
@@ -2229,6 +3219,8 @@ export async function harvestRemoteQuestions({ subjects, questionTarget, existin
       return { provider: "Stack Exchange API", questions: subjectResults.flat(), warnings: [] };
     })(),
     fetchHuggingFaceQuestions(subjects, desiredPerSubject),
+    fetchMmluQuestions(subjects, desiredPerSubject),
+    fetchEnglishGrammarQuestions(subjects, desiredPerSubject),
     fetchOpenTriviaQuestions(subjects, desiredPerSubject),
     fetchQuizApiQuestions(subjects, desiredPerSubject)
   ]);

@@ -14,6 +14,166 @@ import { topUpQuestionBank } from "./backgroundCrawlerService.js";
 import { evaluateBatch, initializeQuiz } from "./intelligenceClient.js";
 
 let schemaReadyPromise;
+const ALLOWED_BATCH_SIZES = new Set([5, 10]);
+const ALLOWED_PRESET_PATTERN = /^[a-z0-9-]{2,40}$/i;
+
+function buildConceptGraphSnapshot(rawGraphs = {}, rawStates = {}) {
+  const snapshot = {};
+  const knownSubjects = new Set([
+    ...Object.keys(rawGraphs || {}),
+    ...Object.keys(rawStates || {}).map((key) => String(key).split("::", 1)[0]).filter(Boolean)
+  ]);
+
+  for (const subject of knownSubjects) {
+    const graph = rawGraphs?.[subject] || {};
+    const nodesByName = { ...(graph?.nodes || {}) };
+    const nodes = [];
+    const edges = [];
+
+    for (const [stateKey, state] of Object.entries(rawStates || {})) {
+      const [stateSubject, concept] = String(stateKey).split("::");
+      if (stateSubject !== subject || !concept) {
+        continue;
+      }
+
+      if (!nodesByName[concept]) {
+        nodesByName[concept] = {
+          topic: state.topic || subject,
+          prerequisites: state.prerequisites || []
+        };
+      }
+    }
+
+    for (const [concept, details] of Object.entries(nodesByName)) {
+      const stateKey = `${subject}::${concept}`;
+      const state = rawStates[stateKey] || {};
+
+      nodes.push({
+        id: stateKey,
+        label: concept,
+        topic: details?.topic || state.topic || subject,
+        mastery: Number(state.mastery ?? 0.5),
+        uncertainty: Number(state.uncertainty ?? 0.45),
+        attempts: Number(state.attempts ?? 0),
+        correct: Number(state.correct ?? 0),
+        evidenceCount: Number(state.evidenceCount ?? 0)
+      });
+
+      for (const prerequisite of details?.prerequisites || []) {
+        edges.push({
+          source: `${subject}::${prerequisite}`,
+          target: stateKey
+        });
+      }
+    }
+
+    snapshot[subject] = { nodes, edges };
+  }
+
+  return snapshot;
+}
+
+function buildBreakdownsFromAnswers(answers = []) {
+  const subjectBreakdown = {};
+  const subtopicBreakdown = {};
+
+  for (const answer of answers) {
+    if (!answer.subject) {
+      continue;
+    }
+
+    subjectBreakdown[answer.subject] = subjectBreakdown[answer.subject] || { correct: 0, total: 0 };
+    subjectBreakdown[answer.subject].total += 1;
+    if (answer.correct) {
+      subjectBreakdown[answer.subject].correct += 1;
+    }
+
+    const subtopicKey = `${answer.subject}::${answer.subtopic || answer.topic || "Overview"}`;
+    subtopicBreakdown[subtopicKey] = subtopicBreakdown[subtopicKey] || {
+      subject: answer.subject,
+      topic: answer.topic || answer.subject,
+      subtopic: answer.subtopic || answer.topic || "Overview",
+      correct: 0,
+      total: 0,
+      skill: 0.5
+    };
+    subtopicBreakdown[subtopicKey].total += 1;
+    if (answer.correct) {
+      subtopicBreakdown[subtopicKey].correct += 1;
+    }
+    subtopicBreakdown[subtopicKey].skill =
+      subtopicBreakdown[subtopicKey].total
+        ? Number((subtopicBreakdown[subtopicKey].correct / subtopicBreakdown[subtopicKey].total).toFixed(4))
+        : 0.5;
+  }
+
+  return { subjectBreakdown, subtopicBreakdown };
+}
+
+function parseBooleanInput(value, fallback = false) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "number") {
+    return value !== 0;
+  }
+  const normalized = String(value ?? "").trim().toLowerCase();
+  if (!normalized) {
+    return fallback;
+  }
+  if (["true", "1", "yes", "on"].includes(normalized)) {
+    return true;
+  }
+  if (["false", "0", "no", "off"].includes(normalized)) {
+    return false;
+  }
+  return fallback;
+}
+
+function timerEndsAtForSession(startedAt, timerEnabled, timerDurationMinutes) {
+  if (!timerEnabled || timerDurationMinutes <= 0) {
+    return null;
+  }
+
+  const startedTime = new Date(startedAt).getTime();
+  return new Date(startedTime + timerDurationMinutes * 60 * 1000).toISOString();
+}
+
+function sessionTimerState(session) {
+  const timerEnabled = Boolean(session.timer_enabled);
+  const timerDurationMinutes = Number(session.timer_duration_minutes || 0);
+  const startedAt = session.started_at || new Date().toISOString();
+  const endsAt = session.timer_ends_at || timerEndsAtForSession(startedAt, timerEnabled, timerDurationMinutes);
+
+  if (!timerEnabled || !timerDurationMinutes || !endsAt) {
+    return {
+      enabled: false,
+      durationMinutes: 0,
+      endsAt: null,
+      remainingSeconds: null,
+      expired: false
+    };
+  }
+
+  const remainingSeconds = Math.max(0, Math.floor((Date.parse(endsAt) - Date.now()) / 1000));
+  return {
+    enabled: true,
+    durationMinutes: timerDurationMinutes,
+    endsAt,
+    remainingSeconds,
+    expired: remainingSeconds <= 0
+  };
+}
+
+function sessionWithTimerState(session) {
+  const timer = sessionTimerState(session);
+  return {
+    ...session,
+    timer_ends_at: timer.endsAt,
+    timer_remaining_seconds: timer.remainingSeconds,
+    timed_out: timer.expired
+  };
+}
 
 function ensureCrawlerSchema() {
   if (!schemaReadyPromise) {
@@ -38,6 +198,34 @@ function ensureCrawlerSchema() {
             fetched_at timestamptz not null default now(),
             unique (session_id, source_name, source_id)
           )
+        `
+      );
+
+      await query(
+        `
+          alter table quiz_sessions
+          add column if not exists preset_key text not null default 'custom'
+        `
+      );
+
+      await query(
+        `
+          alter table quiz_sessions
+          add column if not exists timer_enabled boolean not null default false
+        `
+      );
+
+      await query(
+        `
+          alter table quiz_sessions
+          add column if not exists timer_duration_minutes integer not null default 0
+        `
+      );
+
+      await query(
+        `
+          alter table quiz_sessions
+          add column if not exists timer_ends_at timestamptz
         `
       );
 
@@ -115,15 +303,33 @@ export async function getSubjectCatalog() {
       `
     );
 
-    if (!result.rowCount) {
-      return fallbackSubjectCatalog;
+    const catalogBySubject = new Map(
+      fallbackSubjectCatalog.map((entry) => [entry.subject, { ...entry }])
+    );
+
+    for (const row of result.rows) {
+      const existing = catalogBySubject.get(row.subject);
+      const dbEntry = {
+        subject: row.subject,
+        questionCount: Number(row.question_count),
+        subtopics: parseJson(row.subtopics, [])
+      };
+
+      if (!existing) {
+        catalogBySubject.set(row.subject, dbEntry);
+        continue;
+      }
+
+      catalogBySubject.set(row.subject, {
+        subject: row.subject,
+        questionCount: Math.max(existing.questionCount || 0, dbEntry.questionCount || 0),
+        subtopics: uniqueStrings([...(existing.subtopics || []), ...(dbEntry.subtopics || [])]).sort()
+      });
     }
 
-    return result.rows.map((row) => ({
-      subject: row.subject,
-      questionCount: Number(row.question_count),
-      subtopics: parseJson(row.subtopics, [])
-    }));
+    return [...catalogBySubject.values()].sort((left, right) =>
+      String(left.subject).localeCompare(String(right.subject))
+    );
   } catch {
     return fallbackSubjectCatalog;
   }
@@ -264,11 +470,16 @@ function normalizeCreationInput(body) {
   const subjects = uniqueStrings(body.subjects);
   const questionTarget = Number.parseInt(String(body.questionTarget || 0), 10);
   const batchSize = Number.parseInt(String(body.batchSize || 0), 10);
+  const presetKey = String(body.presetKey || "custom").trim().toLowerCase() || "custom";
+  const timerEnabled = parseBooleanInput(body.timerEnabled, false);
+  const timerDurationMinutes = timerEnabled
+    ? Number.parseInt(String(body.timerDurationMinutes || 0), 10)
+    : 0;
 
   assert(username.length >= 2, 400, "Username must be at least 2 characters.");
   assert(username.length <= 40, 400, "Username must be at most 40 characters.");
   assert(subjects.length > 0, 400, "Pick at least one subject before starting.");
-  assert([5, 10].includes(batchSize), 400, "Batch size must be either 5 or 10.");
+  assert(ALLOWED_BATCH_SIZES.has(batchSize), 400, "Batch size must be either 5 or 10.");
   assert(questionTarget >= batchSize, 400, "Question count must be at least one batch.");
   assert(questionTarget <= 100, 400, "Question count cannot exceed 100.");
   assert(
@@ -276,12 +487,17 @@ function normalizeCreationInput(body) {
     400,
     "Question count must be a multiple of 5."
   );
+  assert(ALLOWED_PRESET_PATTERN.test(presetKey), 400, "Preset key is invalid.");
+  assert(!timerEnabled || (timerDurationMinutes >= 5 && timerDurationMinutes <= 360), 400, "Timer must be between 5 and 360 minutes.");
 
   return {
     username,
     subjects,
     questionTarget,
-    batchSize
+    batchSize,
+    presetKey,
+    timerEnabled,
+    timerDurationMinutes
   };
 }
 
@@ -316,7 +532,15 @@ async function insertBatch(client, sessionId, batchIndex, batch) {
 export async function createQuizSession(body) {
   await ensureCrawlerSchema();
 
-  const { username, subjects, questionTarget, batchSize } = normalizeCreationInput(body);
+  const {
+    username,
+    subjects,
+    questionTarget,
+    batchSize,
+    presetKey,
+    timerEnabled,
+    timerDurationMinutes
+  } = normalizeCreationInput(body);
   const userId = await getOrCreateUser(username);
   let questions = await loadQuestionsBySubjects(subjects);
 
@@ -355,6 +579,8 @@ export async function createQuizSession(body) {
 
   try {
     await client.query("begin");
+    const startedAt = new Date().toISOString();
+    const timerEndsAt = timerEndsAtForSession(startedAt, timerEnabled, timerDurationMinutes);
 
     const created = await client.query(
       `
@@ -363,8 +589,12 @@ export async function createQuizSession(body) {
           user_id,
           username_snapshot,
           requested_subjects,
+          preset_key,
           question_target,
           batch_size,
+          timer_enabled,
+          timer_duration_minutes,
+          timer_ends_at,
           status,
           current_batch_index,
           total_correct,
@@ -379,12 +609,16 @@ export async function createQuizSession(body) {
           $4::jsonb,
           $5,
           $6,
+          $7,
+          $8,
+          $9,
+          $10,
           'active',
           0,
           0,
           0,
-          $7::jsonb,
-          $8::jsonb
+          $11::jsonb,
+          $12::jsonb
         )
         returning *
       `,
@@ -393,14 +627,18 @@ export async function createQuizSession(body) {
         userId,
         username,
         JSON.stringify(subjects),
+        presetKey,
         adjustedTarget,
         batchSize,
+        timerEnabled,
+        timerDurationMinutes,
+        timerEndsAt,
         JSON.stringify(intelligence.state),
         JSON.stringify(warnings)
       ]
     );
 
-    const session = created.rows[0];
+    const session = sessionWithTimerState(created.rows[0]);
     await insertBatch(client, session.id, 0, intelligence.batch);
     await client.query("commit");
 
@@ -425,7 +663,7 @@ export async function getQuizSession(sessionId) {
   const sessionResult = await query("select * from quiz_sessions where id = $1", [sessionId]);
   assert(sessionResult.rowCount, 404, "Quiz session not found.");
 
-  const session = sessionResult.rows[0];
+  const session = sessionWithTimerState(sessionResult.rows[0]);
   const openBatchResult = await query(
     `
       select *
@@ -485,8 +723,9 @@ export async function submitBatch(sessionId, batchIndex, rawAnswers) {
   const sessionResult = await query("select * from quiz_sessions where id = $1", [sessionId]);
   assert(sessionResult.rowCount, 404, "Quiz session not found.");
 
-  const session = sessionResult.rows[0];
+  const session = sessionWithTimerState(sessionResult.rows[0]);
   assert(session.status === "active", 409, "This quiz is already finished.");
+  const timedOut = Boolean(session.timedOut);
 
   const batchResult = await query(
     `
@@ -606,40 +845,41 @@ export async function submitBatch(sessionId, batchIndex, rawAnswers) {
         intelligence.summary.totalCorrect,
         intelligence.summary.totalAnswered,
         intelligence.summary.currentBatchIndex,
-        intelligence.summary.finished ? "completed" : "active"
+        intelligence.summary.finished || timedOut ? "completed" : "active"
       ]
     );
 
-    if (!intelligence.summary.finished && intelligence.nextBatch) {
+    if (!intelligence.summary.finished && !timedOut && intelligence.nextBatch) {
       await insertBatch(client, sessionId, intelligence.nextBatch.batchIndex, intelligence.nextBatch);
     }
 
-    if (intelligence.summary.finished) {
+    if (intelligence.summary.finished || timedOut) {
       await deleteCachedQuestions(client, sessionId);
     }
 
     await client.query("commit");
+    const refreshedSessionResult = await query("select * from quiz_sessions where id = $1", [sessionId]);
+    const refreshedSession = sessionWithTimerState(refreshedSessionResult.rows[0]);
+    const warnings = uniqueStrings([
+      ...parseJson(refreshedSession.warnings, []),
+      ...(timedOut ? ["Timer expired. The current batch was evaluated and the test was closed."] : [])
+    ]);
 
     return {
       batchResult: intelligence.batchAnalysis,
       session: {
-        ...summarizeSession({
-          ...session,
-          total_correct: intelligence.summary.totalCorrect,
-          total_answered: intelligence.summary.totalAnswered,
-          current_batch_index: intelligence.summary.currentBatchIndex,
-          status: intelligence.summary.finished ? "completed" : "active"
-        }),
+        ...summarizeSession(refreshedSession),
         currentBatchIndex: intelligence.summary.currentBatchIndex
       },
-      currentBatch: intelligence.summary.finished || !intelligence.nextBatch
+      warnings,
+      currentBatch: intelligence.summary.finished || timedOut || !intelligence.nextBatch
         ? null
         : {
             batchIndex: intelligence.nextBatch.batchIndex,
             selectionReason: intelligence.nextBatch.selectionReason,
             questions: intelligence.nextBatch.questions.map(publicQuestion)
           },
-      finished: intelligence.summary.finished
+      finished: intelligence.summary.finished || timedOut
     };
   } catch (error) {
     await client.query("rollback");
@@ -652,7 +892,7 @@ export async function submitBatch(sessionId, batchIndex, rawAnswers) {
 export async function getQuizAnalysis(sessionId) {
   const sessionResult = await query("select * from quiz_sessions where id = $1", [sessionId]);
   assert(sessionResult.rowCount, 404, "Quiz session not found.");
-  const session = sessionResult.rows[0];
+  const session = sessionWithTimerState(sessionResult.rows[0]);
 
   const answersResult = await query(
     `
@@ -680,6 +920,11 @@ export async function getQuizAnalysis(sessionId) {
     explanation: row.explanation_snapshot,
     batchIndex: row.batch_index
   }));
+  const fallbackBreakdowns = buildBreakdownsFromAnswers(answers);
+  const conceptGraph =
+    state.conceptGraph && Object.keys(state.conceptGraph).length
+      ? state.conceptGraph
+      : buildConceptGraphSnapshot(state.conceptGraphs, state.conceptStates);
 
   return {
     session: summarizeSession(session),
@@ -692,8 +937,11 @@ export async function getQuizAnalysis(sessionId) {
         : 0
     },
     difficultyPerformance: state.difficultyPerformance || {},
-    subjectBreakdown: state.subjectBreakdown || {},
-    subtopicBreakdown: state.subtopicBreakdown || {},
+    subjectBreakdown: Object.keys(state.subjectBreakdown || {}).length ? state.subjectBreakdown : fallbackBreakdowns.subjectBreakdown,
+    subtopicBreakdown: Object.keys(state.subtopicBreakdown || {}).length ? state.subtopicBreakdown : fallbackBreakdowns.subtopicBreakdown,
+    conceptGraph,
+    conceptStates: state.conceptStates || {},
+    conceptRecommendations: state.conceptRecommendations || [],
     batchHistory: state.batchHistory || [],
     review: answers
   };
@@ -715,7 +963,7 @@ export async function getHistory(username = "") {
       from quiz_sessions
       ${whereClause}
       order by started_at desc
-      limit 50
+      limit 500
     `,
     params
   );

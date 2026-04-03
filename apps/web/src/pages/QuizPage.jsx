@@ -1,10 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { QuestionCard } from "../components/QuestionCard";
 import { api, activeSessionStorageKey, draftStorageKey } from "../lib/api";
 
 function emptyAnswer(answer) {
   return !answer || (!answer.choiceId && !String(answer.answerText || "").trim());
+}
+
+function formatRemainingTime(totalSeconds) {
+  const clamped = Math.max(0, Number(totalSeconds || 0));
+  const hours = Math.floor(clamped / 3600);
+  const minutes = Math.floor((clamped % 3600) / 60);
+  const seconds = clamped % 60;
+  return hours > 0
+    ? `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
+    : `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
 export function QuizPage() {
@@ -16,6 +26,8 @@ export function QuizPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [confirmBlankSubmit, setConfirmBlankSubmit] = useState(false);
+  const [remainingSeconds, setRemainingSeconds] = useState(null);
+  const timeoutSubmitRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -33,6 +45,8 @@ export function QuizPage() {
           return;
         }
         setPayload(result);
+        setRemainingSeconds(result.session.timerRemainingSeconds);
+        timeoutSubmitRef.current = false;
       } catch (caughtError) {
         if (!cancelled) {
           setError(caughtError.message);
@@ -69,10 +83,51 @@ export function QuizPage() {
     );
   }, [answers, payload?.currentBatch, sessionId]);
 
+  useEffect(() => {
+    if (!payload?.session?.timerEnabled) {
+      setRemainingSeconds(null);
+      timeoutSubmitRef.current = false;
+      return;
+    }
+
+    setRemainingSeconds(payload.session.timerRemainingSeconds ?? 0);
+    timeoutSubmitRef.current = false;
+  }, [payload?.session?.timerEnabled, payload?.session?.timerRemainingSeconds, payload?.currentBatch?.batchIndex]);
+
+  useEffect(() => {
+    if (!payload?.session?.timerEnabled || remainingSeconds == null || remainingSeconds <= 0) {
+      return undefined;
+    }
+
+    const timer = window.setInterval(() => {
+      setRemainingSeconds((current) => {
+        if (current == null) {
+          return current;
+        }
+        return current > 0 ? current - 1 : 0;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [payload?.session?.timerEnabled, remainingSeconds]);
+
   const unansweredCount = useMemo(() => {
     const questions = payload?.currentBatch?.questions || [];
     return questions.filter((question) => emptyAnswer(answers[question.id])).length;
   }, [answers, payload?.currentBatch?.questions]);
+
+  useEffect(() => {
+    if (!payload?.session?.timerEnabled || !payload?.currentBatch) {
+      return;
+    }
+    if (remainingSeconds == null || remainingSeconds > 0 || submitting || timeoutSubmitRef.current) {
+      return;
+    }
+
+    timeoutSubmitRef.current = true;
+    setConfirmBlankSubmit(false);
+    handleSubmit({ forceBlankSubmit: true });
+  }, [payload?.session?.timerEnabled, payload?.currentBatch, remainingSeconds, submitting]);
 
   function handleAnswerChange(questionId, nextAnswer) {
     setAnswers((current) => ({
@@ -82,12 +137,12 @@ export function QuizPage() {
     setConfirmBlankSubmit(false);
   }
 
-  async function handleSubmit() {
+  async function handleSubmit({ forceBlankSubmit = false } = {}) {
     if (!payload?.currentBatch) {
       return;
     }
 
-    if (unansweredCount > 0 && !confirmBlankSubmit) {
+    if (unansweredCount > 0 && !confirmBlankSubmit && !forceBlankSubmit) {
       setConfirmBlankSubmit(true);
       return;
     }
@@ -116,8 +171,10 @@ export function QuizPage() {
       setPayload((current) => ({
         ...current,
         session: result.session,
+        warnings: result.warnings || current?.warnings || [],
         currentBatch: result.currentBatch
       }));
+      setRemainingSeconds(result.session.timerRemainingSeconds ?? null);
       setAnswers({});
     } catch (caughtError) {
       setError(caughtError.message);
@@ -164,6 +221,14 @@ export function QuizPage() {
             Batch {payload.currentBatch.batchIndex + 1} of{" "}
             {Math.ceil(payload.session.questionTarget / payload.session.batchSize)}
           </p>
+          <div className="tag-row">
+            <span className="question-chip secondary">{payload.session.presetKey || "custom"}</span>
+            <span className={`question-chip ${payload.session.timerEnabled ? "" : "secondary"}`}>
+              {payload.session.timerEnabled
+                ? `Time left ${formatRemainingTime(remainingSeconds ?? payload.session.timerRemainingSeconds)}`
+                : "Untimed"}
+            </span>
+          </div>
         </div>
         <div className="progress-wrap">
           <div className="progress-meta">

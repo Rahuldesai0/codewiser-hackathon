@@ -145,6 +145,11 @@ select {
   gap: 18px;
 }
 
+.inset-panel {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
 .field {
   display: grid;
   gap: 8px;
@@ -177,6 +182,39 @@ select {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 14px;
+}
+
+.subject-picker-row {
+  display: grid;
+  gap: 12px;
+}
+
+.selected-subject-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.selected-subject-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(244, 182, 117, 0.12);
+  border: 1px solid rgba(244, 182, 117, 0.32);
+  color: #f7f2e9;
+  font-weight: 600;
+}
+
+.selected-subject-chip button {
+  border: 0;
+  background: transparent;
+  color: #f7f2e9;
+  cursor: pointer;
+  font-weight: 800;
+  line-height: 1;
+  padding: 0;
 }
 
 .subject-card,
@@ -277,6 +315,19 @@ select {
   color: #9de8e3;
 }
 
+.toggle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #f7f2e9;
+  font-weight: 600;
+}
+
+.toggle-row input {
+  width: 18px;
+  height: 18px;
+}
+
 .choice-list {
   display: grid;
   gap: 12px;
@@ -350,6 +401,146 @@ select {
   min-height: 0;
   border-radius: 18px 18px 6px 6px;
   background: linear-gradient(180deg, #3da5a4, #f1b44c);
+}
+
+.line-chart-card {
+  min-width: 0;
+}
+
+.chart-range-select {
+  min-width: 150px;
+}
+
+.chart-range-select select {
+  min-width: 150px;
+}
+
+.line-chart-wrap {
+  width: 100%;
+  overflow: hidden;
+  padding-bottom: 6px;
+}
+
+.line-chart-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.line-chart-grid {
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 1;
+}
+
+.line-chart-path {
+  fill: none;
+  stroke: #f1b44c;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.line-chart-point {
+  fill: #3da5a4;
+  stroke: rgba(12, 15, 20, 0.9);
+  stroke-width: 2;
+}
+
+.line-chart-x-label,
+.line-chart-y-label {
+  fill: rgba(247, 242, 233, 0.68);
+  font-size: 12px;
+}
+
+.line-chart-x-label {
+  text-anchor: middle;
+}
+
+.line-chart-y-label {
+  text-anchor: end;
+}
+
+.concept-graph-card {
+  display: grid;
+  gap: 18px;
+}
+
+.concept-graph-header {
+  align-items: flex-end;
+}
+
+.concept-select {
+  min-width: 220px;
+}
+
+.concept-select select {
+  min-width: 220px;
+}
+
+.concept-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.legend-pill {
+  font-size: 0.82rem;
+  color: rgba(247, 242, 233, 0.76);
+}
+
+.legend-gradient {
+  flex: 1;
+  min-width: 180px;
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgb(222, 78, 88), rgb(236, 178, 74), rgb(102, 190, 92));
+}
+
+.concept-graph-wrap {
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.concept-graph-svg {
+  width: 100%;
+  min-width: 760px;
+  height: auto;
+}
+
+.concept-edge {
+  fill: none;
+  stroke-width: 3;
+  opacity: 0.58;
+}
+
+.concept-node {
+  stroke: rgba(255, 255, 255, 0.16);
+  stroke-width: 1.2;
+}
+
+.concept-node-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.concept-node-meta {
+  font-size: 0.72rem;
+}
+
+.concept-recommendations {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.concept-recommendation {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .table-wrap {
