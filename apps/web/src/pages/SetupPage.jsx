@@ -42,8 +42,8 @@ export function SetupPage({ subjects, loading, error }) {
   }, [batchSize, questionTarget]);
 
   useEffect(() => {
-    if (!availableSubjectOptions.some((entry) => entry.subject === subjectToAdd)) {
-      setSubjectToAdd(availableSubjectOptions[0]?.subject || "");
+    if (subjectToAdd && !availableSubjectOptions.some((entry) => entry.subject === subjectToAdd)) {
+      setSubjectToAdd("");
     }
   }, [availableSubjectOptions, subjectToAdd]);
 
@@ -98,6 +98,7 @@ export function SetupPage({ subjects, loading, error }) {
       return;
     }
     setSelectedSubjects((current) => (current.includes(subject) ? current : [...current, subject]));
+    setSubjectToAdd("");
   }
 
   function removeSubject(subject) {
@@ -117,8 +118,7 @@ export function SetupPage({ subjects, loading, error }) {
 
       <form className="panel setup-form" onSubmit={handleSubmit}>
         <div className="panel-header">
-          <h2>Start a quiz</h2>
-          <p className="muted">Safe defaults, guardrails, and no weird empty-state surprises.</p>
+          <h2>Start A Test</h2>
         </div>
 
         <label className="field">
@@ -140,7 +140,7 @@ export function SetupPage({ subjects, loading, error }) {
             value={username}
             minLength={2}
             maxLength={40}
-            placeholder="Rahul Sharma"
+            placeholder="Username"
             onChange={(event) => setUsername(event.target.value)}
             required
           />
@@ -156,16 +156,21 @@ export function SetupPage({ subjects, loading, error }) {
               onChange={(event) => {
                 const nextSubject = event.target.value;
                 setSubjectToAdd(nextSubject);
-                addSubject(nextSubject);
+                if (nextSubject) {
+                  addSubject(nextSubject);
+                }
               }}
               disabled={loading || !availableSubjectOptions.length}
             >
               {availableSubjectOptions.length ? (
-                availableSubjectOptions.map((entry) => (
-                  <option key={entry.subject} value={entry.subject}>
-                    {entry.subject}
-                  </option>
-                ))
+                <>
+                  <option value="">Select subjects</option>
+                  {availableSubjectOptions.map((entry) => (
+                    <option key={entry.subject} value={entry.subject}>
+                      {entry.subject}
+                    </option>
+                  ))}
+                </>
               ) : (
                 <option value="">All available subjects are already selected</option>
               )}

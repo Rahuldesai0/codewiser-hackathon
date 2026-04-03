@@ -381,6 +381,7 @@ select {
 .bar-entry {
   flex: 1;
   display: grid;
+  grid-template-rows: auto 56px auto;
   gap: 8px;
   justify-items: center;
   align-items: end;
@@ -401,6 +402,35 @@ select {
   min-height: 0;
   border-radius: 18px 18px 6px 6px;
   background: linear-gradient(180deg, #3da5a4, #f1b44c);
+}
+
+.bar-label-wrap {
+  height: 56px;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: visible;
+}
+
+.bar-label {
+  display: inline-block;
+  max-width: 100%;
+  text-align: center;
+  font-size: clamp(0.68rem, 1.1vw, 0.88rem);
+  line-height: 1.05;
+  word-break: break-word;
+}
+
+.bar-entry-angled .bar-label-wrap {
+  align-items: center;
+}
+
+.bar-label-angled {
+  transform: rotate(-28deg);
+  transform-origin: center center;
+  white-space: nowrap;
+  font-size: clamp(0.62rem, 0.95vw, 0.8rem);
 }
 
 .line-chart-card {

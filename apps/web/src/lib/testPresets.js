@@ -32,6 +32,16 @@ export const testPresets = [
     timerDurationMinutes: 180
   },
   {
+    key: "neet",
+    label: "NEET",
+    description: "Physics, Chemistry, and Biology with a timed-test default.",
+    subjects: ["Physics", "Chemistry", "Biology"],
+    questionTarget: 15,
+    batchSize: 5,
+    timerEnabled: true,
+    timerDurationMinutes: 180
+  },
+  {
     key: "gre",
     label: "GRE",
     description: "English and quantitative practice with an optional timed mode.",

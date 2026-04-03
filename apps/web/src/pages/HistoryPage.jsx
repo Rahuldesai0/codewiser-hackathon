@@ -4,6 +4,25 @@ import { AccuracyTrendCard } from "../components/AccuracyTrendCard";
 import { ChartCard } from "../components/ChartCard";
 import { api } from "../lib/api";
 
+function formatSessionDateTime(value) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toLocaleString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
 export function HistoryPage() {
   const [username, setUsername] = useState("");
   const [data, setData] = useState({ sessions: [], trend: [], subjectPerformance: [] });
@@ -63,7 +82,12 @@ export function HistoryPage() {
           onRangeChange={setTrendRange}
           loading={loading}
         />
-        <ChartCard title="Subject performance" items={data.subjectPerformance} />
+        <ChartCard
+          title="Subject performance"
+          items={data.subjectPerformance}
+          labelStyle="angled"
+          condensedLabels
+        />
       </div>
 
       <section className="panel">
@@ -78,6 +102,7 @@ export function HistoryPage() {
                 <div>
                   <strong>{session.username}</strong>
                   <p className="muted">{session.subjects.join(" | ")}</p>
+                  <p className="muted">{formatSessionDateTime(session.startedAt)}</p>
                 </div>
                 <div>
                   <strong>{session.percentage}%</strong>
