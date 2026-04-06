@@ -97,6 +97,33 @@ select {
   animation: rise 320ms ease-out;
 }
 
+.inspect-warning-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(8, 8, 12, 0.9);
+  backdrop-filter: blur(12px);
+}
+
+.inspect-warning-card {
+  width: min(100%, 640px);
+  padding: 32px;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(circle at top, rgba(255, 177, 82, 0.16), transparent 48%),
+    rgba(16, 18, 22, 0.97);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
+  text-align: center;
+}
+
+.inspect-warning-card h2 {
+  margin: 10px 0 14px;
+}
+
 .hero-card h1,
 .summary-strip h1 {
   margin: 8px 0 10px;

@@ -27,7 +27,64 @@ export function QuizPage() {
   const [error, setError] = useState("");
   const [confirmBlankSubmit, setConfirmBlankSubmit] = useState(false);
   const [remainingSeconds, setRemainingSeconds] = useState(null);
+  const [inspectWarningVisible, setInspectWarningVisible] = useState(false);
   const timeoutSubmitRef = useRef(false);
+  const inspectTriggerRef = useRef("idle");
+
+  useEffect(() => {
+    function devtoolsLikelyOpen() {
+      const widthGap = Math.abs(window.outerWidth - window.innerWidth);
+      const heightGap = Math.abs(window.outerHeight - window.innerHeight);
+      return widthGap > 220 || heightGap > 180;
+    }
+
+    function openInspectWarning(trigger = "soft-signal") {
+      inspectTriggerRef.current = trigger;
+      setInspectWarningVisible(true);
+    }
+
+    function handleKeyDown(event) {
+      const key = String(event.key || "").toLowerCase();
+      const wantsDevtoolsShortcut =
+        key === "f12" ||
+        ((event.ctrlKey || event.metaKey) && event.shiftKey && ["i", "j", "c"].includes(key));
+
+      if (!wantsDevtoolsShortcut) {
+        return;
+      }
+
+      event.preventDefault();
+      openInspectWarning("shortcut");
+    }
+
+    function handleContextMenu(event) {
+      if (event.shiftKey) {
+        openInspectWarning("context-menu");
+      }
+    }
+
+    function handleVisibilityCheck() {
+      if (devtoolsLikelyOpen()) {
+        openInspectWarning("window-gap");
+      } else if (inspectTriggerRef.current === "window-gap") {
+        inspectTriggerRef.current = "idle";
+        setInspectWarningVisible(false);
+      }
+    }
+
+    const interval = window.setInterval(handleVisibilityCheck, 1500);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("contextmenu", handleContextMenu);
+    window.addEventListener("resize", handleVisibilityCheck);
+    handleVisibilityCheck();
+
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("contextmenu", handleContextMenu);
+      window.removeEventListener("resize", handleVisibilityCheck);
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -213,6 +270,27 @@ export function QuizPage() {
 
   return (
     <div className="page-stack">
+      {inspectWarningVisible ? (
+        <div className="inspect-warning-overlay" role="dialog" aria-modal="true" aria-live="assertive">
+          <div className="inspect-warning-card">
+            <p className="eyebrow">Quiz guard</p>
+            <h2>You ain't gonna find the answers there lil bro.</h2>
+            <div className="action-row">
+              <button
+                className="ghost-button"
+                type="button"
+                onClick={() => {
+                  inspectTriggerRef.current = "dismissed";
+                  setInspectWarningVisible(false);
+                }}
+              >
+                Back to test
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <section className="panel summary-strip">
         <div>
           <p className="eyebrow">Current session</p>
