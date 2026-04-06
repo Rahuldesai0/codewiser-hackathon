@@ -100,7 +100,7 @@ Open [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
 ## Environment variables
 
-API service:
+API services:
 
 - `PORT` defaults to `4000`
 - `DATABASE_URL` defaults to `postgres://postgres:postgres@localhost:5432/adaptive_quiz`
