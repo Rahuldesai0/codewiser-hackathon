@@ -698,14 +698,16 @@ const MMLU_CONFIGS = [
     subject: "Miscellaneous CS",
     allowedSubjects: COMPUTER_CLASSIFICATION_SUBJECTS,
     topic: "Computer Science Fundamentals",
-    subtopic: "Language Concepts"
+    subtopic: "Language Concepts",
+    strictAllowedSubjects: true
   },
   {
     configName: "high_school_computer_science",
     subject: "Miscellaneous CS",
     allowedSubjects: COMPUTER_CLASSIFICATION_SUBJECTS,
     topic: "Computer Science Fundamentals",
-    subtopic: "Language Concepts"
+    subtopic: "Language Concepts",
+    strictAllowedSubjects: true
   },
   {
     configName: "computer_security",
@@ -2593,7 +2595,7 @@ async function fetchRowsFromDatasetServer({
     throw new Error(skippedWarning);
   }
 
-  const resolvedLength = Math.max(pageLength, 20);
+  const resolvedLength = Math.min(Math.max(pageLength, 20), 100);
   const offsets = datasetOffsetsForRun({
     seedKey,
     estimate: Math.max(estimatedRows, 100),
@@ -2840,6 +2842,7 @@ function buildMmluQuestion(entry, allowedSubjects) {
     allowedSubjects.includes(subject)
   );
   const fallbackSubject = resolveMmluSubject(configEntry, allowedSubjects);
+  const strictAllowedSubjects = Boolean(configEntry.strictAllowedSubjects);
   const classification = classifyQuestionToProfile(
     [
       prompt,
@@ -2849,7 +2852,9 @@ function buildMmluQuestion(entry, allowedSubjects) {
     ],
     classifierSubjects.length ? classifierSubjects : [fallbackSubject]
   );
-  const subject = classification?.subject || fallbackSubject;
+  const subject = strictAllowedSubjects
+    ? fallbackSubject
+    : classification?.subject || fallbackSubject;
 
   const options = choices.map((text, index) => ({
     id: String.fromCharCode(97 + index),
@@ -2860,8 +2865,8 @@ function buildMmluQuestion(entry, allowedSubjects) {
   return normalizeQuestion({
     id: createRemoteQuestionId(`mmlu:${configEntry.configName}:${entry?.row?.row_idx ?? entry?.row_idx ?? prompt}`),
     subject,
-    topic: classification?.profile.topic || configEntry.topic,
-    subtopic: classification?.profile.subtopic || configEntry.subtopic,
+    topic: strictAllowedSubjects ? configEntry.topic : classification?.profile.topic || configEntry.topic,
+    subtopic: strictAllowedSubjects ? configEntry.subtopic : classification?.profile.subtopic || configEntry.subtopic,
     type: "mcq",
     prompt,
     options,
@@ -3015,6 +3020,7 @@ async function quizApiFetch(params = {}) {
 
   const response = await fetch(url, {
     headers: {
+      Authorization: `Bearer ${config.quizApiKey}`,
       "X-Api-Key": config.quizApiKey
     }
   });
@@ -3131,7 +3137,15 @@ async function fetchQuizApiQuestions(subjects, desiredPerSubject) {
       continue;
     }
 
-    for (const item of result.value || []) {
+    const payloadItems = Array.isArray(result.value)
+      ? result.value
+      : Array.isArray(result.value?.questions)
+        ? result.value.questions
+        : Array.isArray(result.value?.data)
+          ? result.value.data
+          : [];
+
+    for (const item of payloadItems) {
       const mapped = buildQuizApiQuestion(item, subjects);
       if (mapped) {
         questions.push(mapped);
